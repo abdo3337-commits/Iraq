@@ -122,45 +122,55 @@ const PassengerDashboard = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm border">
+            <div className="bg-white rounded-2xl shadow-lg border">
               {/* Tab Headers */}
-              <div className="border-b p-4">
-                <div className="flex flex-wrap gap-2">
+              <div className="border-b p-6">
+                <div className="flex flex-wrap gap-3">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                         activeTab === tab.id
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-primary-500 text-white shadow-orange'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-primary-600'
                       }`}
                     >
-                      {tab.icon} {tab.name}
+                      <span className="mr-2">{tab.icon}</span>
+                      {tab.name}
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Tab Content */}
-              <div className="p-6">
+              <div className="p-8">
                 {activeTab === 'book' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">🚗 طلب رحلة جديدة</h2>
+                  <div className="animate-fade-in">
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">🚗 طلب رحلة جديدة</h2>
+                      <p className="text-gray-600">اختر نوع الخدمة والوجهة وسنجد لك أقرب سائق</p>
+                    </div>
                     <TripBookingForm districts={districts} />
                   </div>
                 )}
 
                 {activeTab === 'history' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">📋 تاريخ الرحلات</h2>
+                  <div className="animate-fade-in">
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">📋 تاريخ الرحلات</h2>
+                      <p className="text-gray-600">استعرض جميع رحلاتك السابقة والحالية</p>
+                    </div>
                     <TripHistory />
                   </div>
                 )}
 
                 {activeTab === 'wallet' && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-6">💰 إدارة المحفظة</h2>
+                  <div className="animate-fade-in">
+                    <div className="mb-8">
+                      <h2 className="text-3xl font-bold text-gray-800 mb-2">💰 إدارة المحفظة</h2>
+                      <p className="text-gray-600">إدارة رصيدك ومعاملاتك المالية</p>
+                    </div>
                     <WalletComponent />
                   </div>
                 )}
