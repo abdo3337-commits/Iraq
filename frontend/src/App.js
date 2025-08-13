@@ -98,51 +98,143 @@ const useAuth = () => {
 // Landing Page Component
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-      <div className="max-w-4xl mx-auto text-center text-white px-6">
-        <div className="mb-8">
-          <h1 className="text-6xl font-bold mb-4">🚍 الباص البرتقالي</h1>
-          <h2 className="text-2xl mb-4">منصة النقل الذكية في الأنبار</h2>
-          <p className="text-lg opacity-90 mb-8">
-            احجز رحلتك بسهولة • مشاوير فورية • حجز بالساعة • مهام سريعة
-          </p>
-        </div>
-        
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
-            <div className="text-4xl mb-4">🚗</div>
-            <h3 className="text-xl font-bold mb-2">مشاوير فورية</h3>
-            <p className="opacity-90">احجز سيارة الآن ووصل لوجهتك بأسرع وقت</p>
+    <div className="min-h-screen bg-brand-gradient relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute -bottom-20 left-1/2 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '4s'}}></div>
+      </div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
+        <div className="max-w-6xl mx-auto text-center text-white">
+          {/* Hero Section */}
+          <div className="mb-16 animate-fade-in">
+            <div className="mb-8">
+              <div className="inline-flex items-center justify-center w-24 h-24 bg-white bg-opacity-20 rounded-3xl mb-6 backdrop-blur-sm animate-pulse-orange">
+                <span className="text-5xl">🚍</span>
+              </div>
+              <h1 className="text-7xl lg:text-8xl font-bold mb-4 bg-clip-text">
+                الباص البرتقالي
+              </h1>
+              <div className="w-32 h-1 bg-white bg-opacity-50 mx-auto mb-6 rounded-full"></div>
+              <h2 className="text-2xl lg:text-3xl font-light mb-4 text-gray-100">
+                منصة النقل الذكية في الأنبار
+              </h2>
+              <p className="text-lg lg:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+                احجز رحلتك بكل سهولة ووصل لوجهتك بأمان وسرعة
+              </p>
+            </div>
           </div>
           
-          <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
-            <div className="text-4xl mb-4">⏰</div>
-            <h3 className="text-xl font-bold mb-2">حجز بالساعة</h3>
-            <p className="opacity-90">احجز سائق لساعات محددة لمهامك اليومية</p>
+          {/* Services Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16 animate-slide-in">
+            <div className="hero-card group">
+              <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">🚗</div>
+              <h3 className="text-2xl font-bold mb-4 text-white">مشاوير فورية</h3>
+              <p className="text-gray-200 leading-relaxed">
+                احجز سيارة فوراً واستمتع بخدمة سريعة وموثوقة
+              </p>
+              <div className="mt-4 text-sm text-gray-300">
+                متاح على مدار الساعة
+              </div>
+            </div>
+            
+            <div className="hero-card group">
+              <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">⏰</div>
+              <h3 className="text-2xl font-bold mb-4 text-white">حجز بالساعة</h3>
+              <p className="text-gray-200 leading-relaxed">
+                احجز سائق لساعات محددة لإنجاز مهامك بكل راحة
+              </p>
+              <div className="mt-4 text-sm text-gray-300">
+                مرونة في الوقت والمسار
+              </div>
+            </div>
+            
+            <div className="hero-card group">
+              <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">📦</div>
+              <h3 className="text-2xl font-bold mb-4 text-white">مهام سريعة</h3>
+              <p className="text-gray-200 leading-relaxed">
+                توصيل الطرود والمهام الخاصة بأسعار ثابتة ومناسبة
+              </p>
+              <div className="mt-4 text-sm text-gray-300">
+                أسعار ثابتة وشفافة
+              </div>
+            </div>
           </div>
           
-          <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-6">
-            <div className="text-4xl mb-4">📦</div>
-            <h3 className="text-xl font-bold mb-2">مهام سريعة</h3>
-            <p className="opacity-90">توصيل الطرود والمهام الخاصة بأسعار ثابتة</p>
+          {/* CTA Section */}
+          <div className="space-y-8 animate-fade-in">
+            {/* Primary Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <a 
+                href="/login?role=passenger" 
+                className="group bg-white text-primary-500 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-gray-50 transition-all duration-300 btn-float shadow-lg hover:shadow-xl min-w-[200px]"
+              >
+                <span className="mr-3">🚍</span>
+                دخول كراكب
+                <div className="text-sm font-normal text-gray-500 mt-1">احجز رحلتك الآن</div>
+              </a>
+              
+              <a 
+                href="/login?role=driver" 
+                className="group bg-secondary-600 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-secondary-700 transition-all duration-300 btn-float shadow-lg hover:shadow-xl min-w-[200px]"
+              >
+                <span className="mr-3">🚗</span>
+                دخول كسائق
+                <div className="text-sm font-normal text-secondary-200 mt-1">ابدأ الكسب معنا</div>
+              </a>
+            </div>
+
+            {/* Admin Access */}
+            <div className="flex justify-center">
+              <a 
+                href="/login?role=admin" 
+                className="bg-gray-800 bg-opacity-50 text-white px-6 py-3 rounded-xl font-semibold text-base hover:bg-opacity-70 transition-all duration-300 backdrop-blur-sm border border-white border-opacity-20"
+              >
+                <span className="mr-2">👨‍💼</span>
+                لوحة الإدارة
+              </a>
+            </div>
+
+            {/* Register Link */}
+            <div className="text-center">
+              <p className="text-gray-200 mb-4">
+                لا تملك حساب؟
+              </p>
+              <a 
+                href="/register" 
+                className="inline-flex items-center text-white hover:text-gray-200 transition-colors duration-200 font-semibold border-b-2 border-white border-opacity-30 hover:border-opacity-60 pb-1"
+              >
+                إنشاء حساب جديد
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
           </div>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/login?role=passenger" className="bg-white text-orange-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-colors">
-              دخول كراكب
-            </a>
-            <a href="/login?role=driver" className="bg-orange-700 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-800 transition-colors">
-              دخول كسائق
-            </a>
-            <a href="/login?role=admin" className="bg-gray-800 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-900 transition-colors">
-              لوحة الإدارة
-            </a>
+
+          {/* Features Footer */}
+          <div className="mt-20 pt-12 border-t border-white border-opacity-20">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div className="space-y-2">
+                <div className="text-3xl">🛡️</div>
+                <div className="text-sm font-semibold text-gray-200">أمان وحماية</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl">💰</div>
+                <div className="text-sm font-semibold text-gray-200">أسعار عادلة</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl">📱</div>
+                <div className="text-sm font-semibold text-gray-200">سهولة الاستخدام</div>
+              </div>
+              <div className="space-y-2">
+                <div className="text-3xl">⚡</div>
+                <div className="text-sm font-semibold text-gray-200">خدمة سريعة</div>
+              </div>
+            </div>
           </div>
-          <p className="text-sm opacity-75">
-            لا تملك حساب؟ <a href="/register" className="underline hover:no-underline">إنشاء حساب جديد</a>
-          </p>
         </div>
       </div>
     </div>
