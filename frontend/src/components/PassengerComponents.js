@@ -679,7 +679,7 @@ const WalletComponent = () => {
         <div className="bg-white rounded-2xl p-6 border shadow-sm text-center hover-lift">
           <div className="text-3xl mb-3">💳</div>
           <div className="font-bold text-gray-800">المعاملات</div>
-          <div className="text-lg font-semibold text-secondary-600">
+          <div className="text-lg font-semibold text-blue-900">
             {transactions.length}
           </div>
         </div>
