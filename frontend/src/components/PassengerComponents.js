@@ -177,7 +177,7 @@ const FareEstimator = ({ district, tripType, distance, duration, hourlyDuration 
   if (!district || !tripType) return null;
 
   return (
-    <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-2xl p-6 mb-6 shadow-lg">
+    <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl p-6 mb-6 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-bold text-lg mb-2">💰 التكلفة المتوقعة</h3>
