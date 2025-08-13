@@ -577,7 +577,7 @@ const WalletComponent = () => {
   return (
     <div className="space-y-8">
       {/* Balance Card */}
-      <div className="bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-2xl p-8 shadow-lg animate-fade-in">
+      <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-8 shadow-lg animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
             <div className="flex items-center mb-4">
