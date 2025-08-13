@@ -90,8 +90,8 @@ const PassengerDashboard = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full text-right px-4 py-3 rounded-xl mb-2 transition-all duration-200 font-semibold ${
                       activeTab === tab.id
-                        ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500 shadow-sm'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600'
+                        ? 'bg-orange-50 text-orange-600 border-r-4 border-orange-500 shadow-sm'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-orange-600'
                     }`}
                   >
                     <span className="mr-3 text-lg">{tab.icon}</span>
