@@ -382,7 +382,7 @@ const TripBookingForm = ({ districts }) => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary-500 hover:bg-primary-600 text-white py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-200 btn-float disabled:opacity-50 shadow-lg"
+        className="w-full bg-orange-500 hover:bg-orange-600 text-white py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-200 btn-float disabled:opacity-50 shadow-lg"
       >
         {loading ? (
           <div className="flex items-center justify-center">
