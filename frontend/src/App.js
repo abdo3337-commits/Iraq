@@ -291,55 +291,130 @@ const Login = () => {
     }
   };
 
+  const getRoleColor = () => {
+    switch(role) {
+      case 'driver': return 'bg-secondary-600';
+      case 'admin': return 'bg-gray-800';
+      default: return 'bg-primary-500';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{getRoleIcon()}</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">{getRoleTitle()}</h2>
-          <p className="text-gray-600">الباص البرتقالي</p>
-        </div>
+    <div className="min-h-screen bg-brand-gradient relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-20 right-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '2s'}}></div>
+      </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">البريد الإلكتروني</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-6">
+        <div className="w-full max-w-md">
+          {/* Back to Home */}
+          <div className="text-center mb-8">
+            <a href="/" className="inline-flex items-center text-white hover:text-gray-200 transition-colors duration-200 text-sm">
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              العودة للصفحة الرئيسية
+            </a>
           </div>
 
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">كلمة المرور</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
+          {/* Login Card */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 backdrop-blur-sm animate-fade-in">
+            <div className="text-center mb-8">
+              <div className={`inline-flex items-center justify-center w-20 h-20 ${getRoleColor()} rounded-3xl mb-6 text-4xl text-white shadow-lg`}>
+                {getRoleIcon()}
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">{getRoleTitle()}</h2>
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <span className="text-2xl">🚍</span>
+                <span className="text-lg font-semibold text-primary-500">الباص البرتقالي</span>
+              </div>
+              <p className="text-gray-600">أدخل بياناتك للدخول إلى حسابك</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6 animate-slide-in">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="form-label">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input"
+                  placeholder="example@orangebus.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">كلمة المرور</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full ${getRoleColor()} text-white py-4 px-6 rounded-2xl font-bold text-lg hover:opacity-90 focus:outline-none transition-all duration-200 btn-float disabled:opacity-50 shadow-lg`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="loading-spinner mr-3"></div>
+                    جاري تسجيل الدخول...
+                  </div>
+                ) : (
+                  'دخول'
+                )}
+              </button>
+            </form>
+
+            {/* Quick Login for Demo */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <p className="text-center text-sm text-gray-600 mb-4">حسابات تجريبية للاختبار:</p>
+              <div className="space-y-2 text-xs text-gray-500">
+                {role === 'admin' && (
+                  <div className="text-center">admin@orangebus.com / admin123</div>
+                )}
+                {role === 'passenger' && (
+                  <div className="text-center">passenger@test.com / test123</div>
+                )}
+                {role === 'driver' && (
+                  <div className="text-center">driver@test.com / test123</div>
+                )}
+              </div>
+            </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 focus:outline-none focus:bg-orange-700 disabled:opacity-50"
-          >
-            {loading ? 'جاري تسجيل الدخول...' : 'دخول'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <a href="/" className="text-orange-600 hover:underline">العودة للصفحة الرئيسية</a>
+          {/* Register Link */}
+          <div className="mt-8 text-center">
+            <p className="text-white mb-4">لا تملك حساب؟</p>
+            <a 
+              href="/register" 
+              className="inline-flex items-center bg-white bg-opacity-20 text-white hover:bg-opacity-30 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
+            >
+              إنشاء حساب جديد
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
     </div>
