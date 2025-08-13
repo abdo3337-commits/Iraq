@@ -608,7 +608,7 @@ const WalletComponent = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl p-8 w-full max-w-md animate-fade-in">
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl mb-4 text-white text-2xl">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl mb-4 text-white text-2xl">
                 💰
               </div>
               <h3 className="text-2xl font-bold text-gray-800">إيداع في المحفظة</h3>
