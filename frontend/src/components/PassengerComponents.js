@@ -197,7 +197,7 @@ const FareEstimator = ({ district, tripType, distance, duration, hourlyDuration 
         <div className="text-6xl opacity-20">🧮</div>
       </div>
       {fare && !loading && (
-        <div className="mt-4 pt-4 border-t border-primary-400 text-sm text-primary-100">
+        <div className="mt-4 pt-4 border-t border-orange-400 text-sm text-orange-100">
           * السعر تقديري وقد يختلف حسب الظروف الفعلية للرحلة
         </div>
       )}
