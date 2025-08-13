@@ -80,28 +80,39 @@ const DistrictSelector = ({ selectedDistrict, onSelect, districts }) => {
 // Trip Type Selector
 const TripTypeSelector = ({ selectedType, onSelect }) => {
   const tripTypes = [
-    { id: 'instant', name: 'مشوار فوري', icon: '🚗', description: 'احجز سيارة الآن' },
-    { id: 'hourly', name: 'حجز بالساعة', icon: '⏰', description: 'احجز لساعات محددة' },
-    { id: 'task', name: 'مهمة', icon: '📦', description: 'مهام وتوصيل طرود' }
+    { id: 'instant', name: 'مشوار فوري', icon: '🚗', description: 'احجز سيارة الآن', color: 'from-primary-500 to-primary-600' },
+    { id: 'hourly', name: 'حجز بالساعة', icon: '⏰', description: 'احجز لساعات محددة', color: 'from-secondary-600 to-secondary-700' },
+    { id: 'task', name: 'مهمة', icon: '📦', description: 'مهام وتوصيل طرود', color: 'from-green-500 to-green-600' }
   ];
 
   return (
-    <div className="mb-6">
-      <label className="block text-gray-700 text-sm font-bold mb-2">نوع الخدمة</label>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className="mb-8">
+      <label className="form-label text-lg mb-4">اختر نوع الخدمة</label>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {tripTypes.map((type) => (
           <button
             key={type.id}
             onClick={() => onSelect(type.id)}
-            className={`p-4 rounded-lg border-2 transition-colors ${
+            className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 hover-lift ${
               selectedType === type.id
-                ? 'border-orange-500 bg-orange-50'
-                : 'border-gray-200 bg-white hover:border-orange-300'
+                ? `border-transparent bg-gradient-to-br ${type.color} text-white shadow-lg`
+                : 'border-gray-200 bg-white hover:border-primary-300 hover:shadow-md'
             }`}
           >
-            <div className="text-2xl mb-2">{type.icon}</div>
-            <h3 className="font-bold mb-1">{type.name}</h3>
-            <p className="text-sm text-gray-600">{type.description}</p>
+            <div className={`text-4xl mb-3 ${selectedType === type.id ? '' : 'group-hover:scale-110'} transition-transform duration-200`}>
+              {type.icon}
+            </div>
+            <h3 className={`font-bold text-lg mb-2 ${selectedType === type.id ? 'text-white' : 'text-gray-800'}`}>
+              {type.name}
+            </h3>
+            <p className={`text-sm ${selectedType === type.id ? 'text-white opacity-90' : 'text-gray-600'}`}>
+              {type.description}
+            </p>
+            {selectedType === type.id && (
+              <div className="absolute top-3 left-3 w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+              </div>
+            )}
           </button>
         ))}
       </div>
