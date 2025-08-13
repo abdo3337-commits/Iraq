@@ -110,7 +110,7 @@ const PassengerDashboard = () => {
                 <h4 className="font-bold text-lg text-gray-800">{user?.name}</h4>
                 <p className="text-sm text-gray-600 mb-2">{user?.email}</p>
                 <p className="text-sm text-gray-600 mb-4">{user?.phone}</p>
-                <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 rounded-2xl shadow-lg">
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-2xl shadow-lg">
                   <div className="text-xs font-medium opacity-90 mb-1">رصيد المحفظة</div>
                   <div className="font-bold text-xl">
                     {user?.wallet_balance?.toLocaleString() || '0'} د.ع
