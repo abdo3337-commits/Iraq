@@ -382,15 +382,18 @@ const TripBookingForm = ({ districts }) => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-orange-700 focus:outline-none focus:bg-orange-700 disabled:opacity-50"
+        className="w-full bg-primary-500 hover:bg-primary-600 text-white py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-200 btn-float disabled:opacity-50 shadow-lg"
       >
         {loading ? (
           <div className="flex items-center justify-center">
-            <div className="loading-spinner mr-2"></div>
+            <div className="loading-spinner mr-3"></div>
             جاري إنشاء الطلب...
           </div>
         ) : (
-          'طلب الرحلة'
+          <div className="flex items-center justify-center">
+            <span className="mr-3">🚗</span>
+            طلب الرحلة
+          </div>
         )}
       </button>
     </form>
