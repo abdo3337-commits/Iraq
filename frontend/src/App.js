@@ -3,8 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 
-// Context for authentication
-const AuthContext = createContext();
+// Import Dashboard Components
+import PassengerDashboard from './pages/PassengerDashboard';
+import DriverDashboard from './pages/DriverDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+
+// Create and Export AuthContext
+export const AuthContext = createContext();
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -447,58 +452,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   return children;
-};
-
-// Placeholder components for different user dashboards
-const PassengerDashboard = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="text-center py-20">
-        <h1 className="text-4xl font-bold mb-4">🚍 لوحة الراكب</h1>
-        <p className="text-xl text-gray-600">مرحباً بك في منصة الباص البرتقالي</p>
-        <div className="mt-8">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-            <h3 className="text-lg font-bold mb-4">قريباً...</h3>
-            <p className="text-gray-600">واجهة طلب الرحلات قيد التطوير</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const DriverDashboard = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="text-center py-20">
-        <h1 className="text-4xl font-bold mb-4">🚗 لوحة السائق</h1>
-        <p className="text-xl text-gray-600">مرحباً بك في منصة الباص البرتقالي</p>
-        <div className="mt-8">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-            <h3 className="text-lg font-bold mb-4">قريباً...</h3>
-            <p className="text-gray-600">واجهة السائق قيد التطوير</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const AdminDashboard = () => {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="text-center py-20">
-        <h1 className="text-4xl font-bold mb-4">👨‍💼 لوحة الإدارة</h1>
-        <p className="text-xl text-gray-600">مرحباً بك في منصة الباص البرتقالي</p>
-        <div className="mt-8">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-            <h3 className="text-lg font-bold mb-4">قريباً...</h3>
-            <p className="text-gray-600">لوحة الإدارة قيد التطوير</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 };
 
 // Main App Component
