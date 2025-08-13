@@ -587,7 +587,7 @@ const WalletComponent = () => {
             <div className="text-4xl font-bold mb-2">
               {balance.toLocaleString()} د.ع
             </div>
-            <div className="text-primary-200 text-sm">
+            <div className="text-orange-200 text-sm">
               متاح للاستخدام فوراً
             </div>
           </div>
