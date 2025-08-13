@@ -74,7 +74,7 @@ const PassengerDashboard = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
-              <div className="bg-primary-500 text-white p-6">
+              <div className="bg-orange-500 text-white p-6">
                 <div className="flex items-center">
                   <span className="text-3xl mr-3">🚍</span>
                   <div>
