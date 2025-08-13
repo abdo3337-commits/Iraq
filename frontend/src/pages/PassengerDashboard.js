@@ -49,7 +49,7 @@ const PassengerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <div className="flex items-center bg-primary-500 text-white px-4 py-2 rounded-2xl mr-4 shadow-lg">
+              <div className="flex items-center bg-orange-500 text-white px-4 py-2 rounded-2xl mr-4 shadow-lg">
                 <span className="text-2xl mr-2">🚍</span>
                 <span className="text-xl font-bold">الباص البرتقالي</span>
               </div>
