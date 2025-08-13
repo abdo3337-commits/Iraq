@@ -472,119 +472,238 @@ const Register = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-        <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md text-center">
-          <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">تم إنشاء الحساب بنجاح!</h2>
-          <p className="text-gray-600 mb-6">يمكنك الآن تسجيل الدخول باستخدام بياناتك</p>
-          <a href="/login" className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700">
-            تسجيل الدخول
-          </a>
+      <div className="min-h-screen bg-brand-gradient relative overflow-hidden flex items-center justify-center px-6">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center animate-fade-in">
+          <div className="mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-3xl mb-6 text-4xl text-white shadow-lg animate-pulse">
+              ✅
+            </div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">تم إنشاء الحساب بنجاح!</h2>
+            <p className="text-gray-600 leading-relaxed">
+              مرحباً بك في منصة الباص البرتقالي<br />
+              يمكنك الآن تسجيل الدخول باستخدام بياناتك
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <a 
+              href="/login" 
+              className="btn-primary w-full inline-block"
+            >
+              تسجيل الدخول الآن
+            </a>
+            <a 
+              href="/" 
+              className="block text-gray-500 hover:text-primary-500 transition-colors duration-200"
+            >
+              العودة للصفحة الرئيسية
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
+  const getRoleIcon = () => {
+    switch(formData.role) {
+      case 'driver': return '🚗';
+      default: return '🚍';
+    }
+  };
+
+  const getRoleColor = () => {
+    switch(formData.role) {
+      case 'driver': return 'bg-secondary-600';
+      default: return 'bg-primary-500';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-400 to-red-600 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">📝</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">إنشاء حساب جديد</h2>
-          <p className="text-gray-600">الباص البرتقالي</p>
-        </div>
+    <div className="min-h-screen bg-brand-gradient relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl animate-pulse" style={{animationDelay: '3s'}}></div>
+      </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md">
+          {/* Back to Home */}
+          <div className="text-center mb-8">
+            <a href="/" className="inline-flex items-center text-white hover:text-gray-200 transition-colors duration-200 text-sm">
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              العودة للصفحة الرئيسية
+            </a>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">نوع الحساب</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
+          {/* Register Card */}
+          <div className="bg-white rounded-3xl shadow-2xl p-8 backdrop-blur-sm animate-fade-in">
+            <div className="text-center mb-8">
+              <div className={`inline-flex items-center justify-center w-20 h-20 ${getRoleColor()} rounded-3xl mb-6 text-4xl text-white shadow-lg`}>
+                📝
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">إنشاء حساب جديد</h2>
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <span className="text-2xl">🚍</span>
+                <span className="text-lg font-semibold text-primary-500">الباص البرتقالي</span>
+              </div>
+              <p className="text-gray-600">انضم إلى منصة النقل الذكية في الأنبار</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6 animate-slide-in">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </div>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="form-label">نوع الحساب</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className={`cursor-pointer flex items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 ${
+                    formData.role === 'passenger' 
+                      ? 'border-primary-500 bg-primary-50 text-primary-600' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="passenger"
+                      checked={formData.role === 'passenger'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <span className="text-2xl mr-3">🚍</span>
+                    <div>
+                      <div className="font-semibold">راكب</div>
+                      <div className="text-xs text-gray-500">احجز رحلاتك</div>
+                    </div>
+                  </label>
+                  
+                  <label className={`cursor-pointer flex items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 ${
+                    formData.role === 'driver' 
+                      ? 'border-secondary-600 bg-secondary-50 text-secondary-600' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value="driver"
+                      checked={formData.role === 'driver'}
+                      onChange={handleChange}
+                      className="sr-only"
+                    />
+                    <span className="text-2xl mr-3">🚗</span>
+                    <div>
+                      <div className="font-semibold">سائق</div>
+                      <div className="text-xs text-gray-500">ابدأ الكسب</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="form-label">الاسم الكامل</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="أدخل اسمك الكامل"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="example@gmail.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">رقم الهاتف</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="07901234567"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">كلمة المرور</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="form-label">تأكيد كلمة المرور</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full ${getRoleColor()} text-white py-4 px-6 rounded-2xl font-bold text-lg hover:opacity-90 focus:outline-none transition-all duration-200 btn-float disabled:opacity-50 shadow-lg`}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="loading-spinner mr-3"></div>
+                    جاري إنشاء الحساب...
+                  </div>
+                ) : (
+                  'إنشاء حساب'
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Login Link */}
+          <div className="mt-8 text-center">
+            <p className="text-white mb-4">لديك حساب بالفعل؟</p>
+            <a 
+              href="/login" 
+              className="inline-flex items-center bg-white bg-opacity-20 text-white hover:bg-opacity-30 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 backdrop-blur-sm border border-white border-opacity-30"
             >
-              <option value="passenger">راكب</option>
-              <option value="driver">سائق</option>
-            </select>
+              تسجيل الدخول
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+            </a>
           </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">الاسم الكامل</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">البريد الإلكتروني</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">رقم الهاتف</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">كلمة المرور</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">تأكيد كلمة المرور</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 focus:outline-none focus:bg-orange-700 disabled:opacity-50"
-          >
-            {loading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <a href="/login" className="text-orange-600 hover:underline">لديك حساب بالفعل؟ دخول</a>
         </div>
       </div>
     </div>
