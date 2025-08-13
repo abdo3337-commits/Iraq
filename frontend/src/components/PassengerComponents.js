@@ -177,19 +177,29 @@ const FareEstimator = ({ district, tripType, distance, duration, hourlyDuration 
   if (!district || !tripType) return null;
 
   return (
-    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-      <h3 className="font-bold mb-2">💰 التكلفة المتوقعة</h3>
-      {loading ? (
-        <div className="flex items-center">
-          <div className="loading-spinner mr-2"></div>
-          <span>جاري الحساب...</span>
+    <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-2xl p-6 mb-6 shadow-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-lg mb-2">💰 التكلفة المتوقعة</h3>
+          {loading ? (
+            <div className="flex items-center">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+              <span>جاري الحساب...</span>
+            </div>
+          ) : fare ? (
+            <div className="text-3xl font-bold">
+              {fare.toLocaleString()} د.ع
+            </div>
+          ) : (
+            <div className="text-primary-200">غير متاح</div>
+          )}
         </div>
-      ) : fare ? (
-        <div className="text-2xl font-bold text-orange-600">
-          {fare.toLocaleString()} دينار عراقي
+        <div className="text-6xl opacity-20">🧮</div>
+      </div>
+      {fare && !loading && (
+        <div className="mt-4 pt-4 border-t border-primary-400 text-sm text-primary-100">
+          * السعر تقديري وقد يختلف حسب الظروف الفعلية للرحلة
         </div>
-      ) : (
-        <div className="text-gray-500">غير متاح</div>
       )}
     </div>
   );
