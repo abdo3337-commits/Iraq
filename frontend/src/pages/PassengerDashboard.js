@@ -132,8 +132,8 @@ const PassengerDashboard = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                         activeTab === tab.id
-                          ? 'bg-primary-500 text-white shadow-orange'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-primary-600'
+                          ? 'bg-orange-500 text-white shadow-orange'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-orange-600'
                       }`}
                     >
                       <span className="mr-2">{tab.icon}</span>
