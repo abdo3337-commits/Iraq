@@ -72,23 +72,29 @@ const PassengerDashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-              <div className="p-4 bg-orange-600 text-white">
-                <h3 className="font-bold">لوحة الراكب</h3>
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
+              <div className="bg-primary-500 text-white p-6">
+                <div className="flex items-center">
+                  <span className="text-3xl mr-3">🚍</span>
+                  <div>
+                    <h3 className="font-bold text-lg">لوحة الراكب</h3>
+                    <p className="text-primary-100 text-sm">منصة النقل الذكية</p>
+                  </div>
+                </div>
               </div>
-              <nav className="p-2">
+              <nav className="p-4">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full text-right px-4 py-3 rounded-lg mb-2 transition-colors ${
+                    className={`w-full text-right px-4 py-3 rounded-xl mb-2 transition-all duration-200 font-semibold ${
                       activeTab === tab.id
-                        ? 'bg-orange-50 text-orange-600 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-primary-50 text-primary-600 border-r-4 border-primary-500 shadow-sm'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-primary-600'
                     }`}
                   >
-                    <span className="mr-3">{tab.icon}</span>
+                    <span className="mr-3 text-lg">{tab.icon}</span>
                     {tab.name}
                   </button>
                 ))}
@@ -96,15 +102,17 @@ const PassengerDashboard = () => {
             </div>
 
             {/* User Info Card */}
-            <div className="mt-6 bg-white rounded-lg shadow-sm border p-4">
+            <div className="bg-white rounded-2xl shadow-lg border p-6">
               <div className="text-center">
-                <div className="text-4xl mb-3">👤</div>
-                <h4 className="font-bold">{user?.name}</h4>
-                <p className="text-sm text-gray-600">{user?.email}</p>
-                <p className="text-sm text-gray-600">{user?.phone}</p>
-                <div className="mt-3 p-2 bg-blue-50 rounded">
-                  <div className="text-xs text-blue-600">رصيد المحفظة</div>
-                  <div className="font-bold text-blue-800">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl mb-4 text-white text-2xl shadow-lg">
+                  👤
+                </div>
+                <h4 className="font-bold text-lg text-gray-800">{user?.name}</h4>
+                <p className="text-sm text-gray-600 mb-2">{user?.email}</p>
+                <p className="text-sm text-gray-600 mb-4">{user?.phone}</p>
+                <div className="bg-gradient-to-r from-primary-500 to-primary-600 text-white p-4 rounded-2xl shadow-lg">
+                  <div className="text-xs font-medium opacity-90 mb-1">رصيد المحفظة</div>
+                  <div className="font-bold text-xl">
                     {user?.wallet_balance?.toLocaleString() || '0'} د.ع
                   </div>
                 </div>
