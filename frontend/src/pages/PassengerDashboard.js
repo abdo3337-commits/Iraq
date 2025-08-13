@@ -1,0 +1,161 @@
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { AuthContext } from '../App';
+import {
+  TripBookingForm,
+  TripHistory,
+  WalletComponent
+} from '../components/PassengerComponents';
+
+const PassengerDashboard = () => {
+  const { user, logout } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState('book');
+  const [districts, setDistricts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDistricts();
+  }, []);
+
+  const fetchDistricts = async () => {
+    try {
+      const response = await axios.get('/districts');
+      setDistricts(response.data.districts);
+    } catch (error) {
+      console.error('Error fetching districts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tabs = [
+    { id: 'book', name: 'طلب رحلة', icon: '🚗' },
+    { id: 'history', name: 'رحلاتي', icon: '📋' },
+    { id: 'wallet', name: 'المحفظة', icon: '💰' }
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold text-orange-600 mr-4">🚍 الباص البرتقالي</h1>
+              <span className="text-gray-600">مرحباً، {user?.name}</span>
+            </div>
+            <button
+              onClick={logout}
+              className="text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              تسجيل الخروج 🚪
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+              <div className="p-4 bg-orange-600 text-white">
+                <h3 className="font-bold">لوحة الراكب</h3>
+              </div>
+              <nav className="p-2">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full text-right px-4 py-3 rounded-lg mb-2 transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-orange-50 text-orange-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="mr-3">{tab.icon}</span>
+                    {tab.name}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            {/* User Info Card */}
+            <div className="mt-6 bg-white rounded-lg shadow-sm border p-4">
+              <div className="text-center">
+                <div className="text-4xl mb-3">👤</div>
+                <h4 className="font-bold">{user?.name}</h4>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+                <p className="text-sm text-gray-600">{user?.phone}</p>
+                <div className="mt-3 p-2 bg-blue-50 rounded">
+                  <div className="text-xs text-blue-600">رصيد المحفظة</div>
+                  <div className="font-bold text-blue-800">
+                    {user?.wallet_balance?.toLocaleString() || '0'} د.ع
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-sm border">
+              {/* Tab Headers */}
+              <div className="border-b p-4">
+                <div className="flex flex-wrap gap-2">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+                        activeTab === tab.id
+                          ? 'bg-orange-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {tab.icon} {tab.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-6">
+                {activeTab === 'book' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">🚗 طلب رحلة جديدة</h2>
+                    <TripBookingForm districts={districts} />
+                  </div>
+                )}
+
+                {activeTab === 'history' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">📋 تاريخ الرحلات</h2>
+                    <TripHistory />
+                  </div>
+                )}
+
+                {activeTab === 'wallet' && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-6">💰 إدارة المحفظة</h2>
+                    <WalletComponent />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PassengerDashboard;
