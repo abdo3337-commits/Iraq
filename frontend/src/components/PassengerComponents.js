@@ -80,8 +80,8 @@ const DistrictSelector = ({ selectedDistrict, onSelect, districts }) => {
 // Trip Type Selector
 const TripTypeSelector = ({ selectedType, onSelect }) => {
   const tripTypes = [
-    { id: 'instant', name: 'مشوار فوري', icon: '🚗', description: 'احجز سيارة الآن', color: 'from-primary-500 to-primary-600' },
-    { id: 'hourly', name: 'حجز بالساعة', icon: '⏰', description: 'احجز لساعات محددة', color: 'from-secondary-600 to-secondary-700' },
+    { id: 'instant', name: 'مشوار فوري', icon: '🚗', description: 'احجز سيارة الآن', color: 'from-orange-500 to-orange-600' },
+    { id: 'hourly', name: 'حجز بالساعة', icon: '⏰', description: 'احجز لساعات محددة', color: 'from-blue-900 to-blue-800' },
     { id: 'task', name: 'مهمة', icon: '📦', description: 'مهام وتوصيل طرود', color: 'from-green-500 to-green-600' }
   ];
 
