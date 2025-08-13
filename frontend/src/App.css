@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --primary-orange: #ff6e31;
@@ -121,19 +121,19 @@ body {
 
 /* Custom button styles with brand colors */
 .btn-primary {
-  @apply bg-primary-500 hover:bg-primary-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-orange hover:shadow-lg;
+  @apply bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl;
 }
 
 .btn-primary-outline {
-  @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-200;
+  @apply border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-200;
 }
 
 .btn-secondary {
-  @apply bg-secondary-600 hover:bg-secondary-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-navy hover:shadow-lg;
+  @apply bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl;
 }
 
 .btn-secondary-outline {
-  @apply border-2 border-secondary-600 text-secondary-600 hover:bg-secondary-600 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-200;
+  @apply border-2 border-blue-900 text-blue-900 hover:bg-blue-900 hover:text-white font-bold py-3 px-6 rounded-xl transition-all duration-200;
 }
 
 .btn-success {
@@ -150,7 +150,7 @@ body {
 
 /* Form styles with brand colors */
 .form-input {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-200;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200;
 }
 
 .form-input:focus {
@@ -163,7 +163,7 @@ body {
 }
 
 .form-select {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-primary-500 bg-white transition-all duration-200;
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-orange-500 bg-white transition-all duration-200;
 }
 
 /* Card styles */
@@ -176,11 +176,11 @@ body {
 }
 
 .card-orange {
-  @apply bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-2xl shadow-orange p-6;
+  @apply bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl shadow-orange p-6;
 }
 
 .card-navy {
-  @apply bg-gradient-to-br from-secondary-600 to-secondary-700 text-white rounded-2xl shadow-navy p-6;
+  @apply bg-gradient-to-br from-blue-900 to-blue-800 text-white rounded-2xl shadow-navy p-6;
 }
 
 /* Status badges with improved styling */
@@ -230,11 +230,11 @@ body {
 }
 
 .nav-item-active {
-  @apply bg-primary-50 text-primary-600 border-r-4 border-primary-500;
+  @apply bg-orange-50 text-orange-600;
 }
 
 .nav-item-inactive {
-  @apply text-gray-700 hover:bg-gray-50 hover:text-primary-600;
+  @apply text-gray-700 hover:bg-gray-50 hover:text-orange-600;
 }
 
 /* Stats card animations */
@@ -251,7 +251,7 @@ body {
 }
 
 .stats-card-orange {
-  @apply bg-gradient-to-br from-primary-500 to-primary-600 shadow-orange hover:shadow-xl;
+  @apply bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange hover:shadow-xl;
 }
 
 .stats-card-purple {
@@ -259,7 +259,7 @@ body {
 }
 
 .stats-card-navy {
-  @apply bg-gradient-to-br from-secondary-600 to-secondary-700 shadow-navy hover:shadow-xl;
+  @apply bg-gradient-to-br from-blue-900 to-blue-800 shadow-navy hover:shadow-xl;
 }
 
 /* Responsive utilities */
