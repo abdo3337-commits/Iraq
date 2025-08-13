@@ -96,7 +96,7 @@ const TripTypeSelector = ({ selectedType, onSelect }) => {
             className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 hover-lift ${
               selectedType === type.id
                 ? `border-transparent bg-gradient-to-br ${type.color} text-white shadow-lg`
-                : 'border-gray-200 bg-white hover:border-primary-300 hover:shadow-md'
+                : 'border-gray-200 bg-white hover:border-orange-300 hover:shadow-md'
             }`}
           >
             <div className={`text-4xl mb-3 ${selectedType === type.id ? '' : 'group-hover:scale-110'} transition-transform duration-200`}>
