@@ -671,7 +671,7 @@ const WalletComponent = () => {
         <div className="bg-white rounded-2xl p-6 border shadow-sm text-center hover-lift">
           <div className="text-3xl mb-3">📈</div>
           <div className="font-bold text-gray-800">إجمالي الرحلات</div>
-          <div className="text-lg font-semibold text-primary-600">
+          <div className="text-lg font-semibold text-orange-600">
             {transactions.filter(t => t.transaction_type === 'trip_payment').length}
           </div>
         </div>
