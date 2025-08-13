@@ -49,14 +49,21 @@ const PassengerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-orange-600 mr-4">🚍 الباص البرتقالي</h1>
-              <span className="text-gray-600">مرحباً، {user?.name}</span>
+              <div className="flex items-center bg-primary-500 text-white px-4 py-2 rounded-2xl mr-4 shadow-lg">
+                <span className="text-2xl mr-2">🚍</span>
+                <span className="text-xl font-bold">الباص البرتقالي</span>
+              </div>
+              <div>
+                <div className="text-gray-600 text-sm">مرحباً،</div>
+                <div className="font-semibold text-gray-800">{user?.name}</div>
+              </div>
             </div>
             <button
               onClick={logout}
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className="flex items-center text-gray-600 hover:text-red-600 transition-colors duration-200 bg-gray-50 px-4 py-2 rounded-xl hover:bg-red-50"
             >
-              تسجيل الخروج 🚪
+              <span className="mr-2">🚪</span>
+              تسجيل الخروج
             </button>
           </div>
         </div>
