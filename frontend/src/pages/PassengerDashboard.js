@@ -104,7 +104,7 @@ const PassengerDashboard = () => {
             {/* User Info Card */}
             <div className="bg-white rounded-2xl shadow-lg border p-6">
               <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl mb-4 text-white text-2xl shadow-lg">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl mb-4 text-white text-2xl shadow-lg">
                   👤
                 </div>
                 <h4 className="font-bold text-lg text-gray-800">{user?.name}</h4>
