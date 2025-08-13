@@ -110,7 +110,7 @@ const TripTypeSelector = ({ selectedType, onSelect }) => {
             </p>
             {selectedType === type.id && (
               <div className="absolute top-3 left-3 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-primary-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
               </div>
             )}
           </button>
