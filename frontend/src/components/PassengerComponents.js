@@ -561,54 +561,89 @@ const WalletComponent = () => {
     return texts[type] || type;
   };
 
+  const getTransactionColor = (type) => {
+    const colors = {
+      deposit: 'text-green-600',
+      withdrawal: 'text-red-600',
+      trip_payment: 'text-red-600',
+      trip_earning: 'text-green-600'
+    };
+    return colors[type] || 'text-gray-600';
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Balance Card */}
-      <div className="bg-orange-600 text-white rounded-xl p-6">
+      <div className="bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-2xl p-8 shadow-lg animate-fade-in">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-bold mb-2">💰 رصيد المحفظة</h3>
-            <div className="text-3xl font-bold">
+            <div className="flex items-center mb-4">
+              <span className="text-3xl mr-3">💰</span>
+              <h3 className="text-xl font-bold">رصيد المحفظة</h3>
+            </div>
+            <div className="text-4xl font-bold mb-2">
               {balance.toLocaleString()} د.ع
             </div>
+            <div className="text-primary-200 text-sm">
+              متاح للاستخدام فوراً
+            </div>
           </div>
-          <button
-            onClick={() => setShowDeposit(true)}
-            className="bg-white text-orange-600 px-4 py-2 rounded-lg font-bold hover:bg-gray-100"
-          >
-            إيداع
-          </button>
+          <div className="text-right">
+            <button
+              onClick={() => setShowDeposit(true)}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-2xl font-bold transition-all duration-200 backdrop-blur-sm border border-white border-opacity-30"
+            >
+              <span className="mr-2">➕</span>
+              إيداع
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Deposit Modal */}
       {showDeposit && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-bold mb-4">إيداع في المحفظة</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-500 rounded-2xl mb-4 text-white text-2xl">
+                💰
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800">إيداع في المحفظة</h3>
+              <p className="text-gray-600 mt-2">أضف رصيد لحسابك لتتمكن من حجز الرحلات</p>
+            </div>
             
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">المبلغ (د.ع)</label>
+            <div className="mb-6">
+              <label className="form-label">المبلغ (د.ع)</label>
               <input
                 type="number"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
                 placeholder="أدخل المبلغ"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
+                className="form-input"
+                min="1000"
+                step="1000"
               />
+              <p className="text-sm text-gray-500 mt-2">الحد الأدنى للإيداع: 1,000 د.ع</p>
             </div>
             
             <div className="flex gap-3">
               <button
                 onClick={handleDeposit}
-                disabled={loading}
-                className="flex-1 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 disabled:opacity-50"
+                disabled={loading || !depositAmount || parseFloat(depositAmount) < 1000}
+                className="flex-1 btn-primary disabled:opacity-50"
               >
-                {loading ? 'جاري الإيداع...' : 'إيداع'}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="loading-spinner mr-2"></div>
+                    جاري الإيداع...
+                  </div>
+                ) : (
+                  'تأكيد الإيداع'
+                )}
               </button>
               <button
                 onClick={() => setShowDeposit(false)}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400"
+                className="flex-1 btn-ghost"
               >
                 إلغاء
               </button>
@@ -617,44 +652,95 @@ const WalletComponent = () => {
         </div>
       )}
 
-      {/* Transactions */}
-      <div>
-        <h3 className="text-lg font-bold mb-4">تاريخ المعاملات</h3>
-        {transactions.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            لا توجد معاملات
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl p-6 border shadow-sm text-center hover-lift">
+          <div className="text-3xl mb-3">📊</div>
+          <div className="font-bold text-gray-800">إجمالي الإنفاق</div>
+          <div className="text-lg font-semibold text-red-600">
+            {transactions
+              .filter(t => t.amount < 0)
+              .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+              .toLocaleString()} د.ع
           </div>
-        ) : (
-          <div className="space-y-3">
-            {transactions.map((transaction) => (
-              <div key={transaction.id} className="bg-white border rounded-lg p-4">
-                <div className="flex justify-between items-center">
+        </div>
+        
+        <div className="bg-white rounded-2xl p-6 border shadow-sm text-center hover-lift">
+          <div className="text-3xl mb-3">📈</div>
+          <div className="font-bold text-gray-800">إجمالي الرحلات</div>
+          <div className="text-lg font-semibold text-primary-600">
+            {transactions.filter(t => t.transaction_type === 'trip_payment').length}
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-2xl p-6 border shadow-sm text-center hover-lift">
+          <div className="text-3xl mb-3">💳</div>
+          <div className="font-bold text-gray-800">المعاملات</div>
+          <div className="text-lg font-semibold text-secondary-600">
+            {transactions.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Transactions */}
+      <div className="bg-white rounded-2xl border shadow-sm">
+        <div className="p-6 border-b">
+          <h3 className="text-xl font-bold text-gray-800">تاريخ المعاملات</h3>
+        </div>
+        <div className="p-6">
+          {transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4 opacity-20">💳</div>
+              <h4 className="text-lg font-semibold text-gray-800 mb-2">لا توجد معاملات</h4>
+              <p className="text-gray-600">لم تقم بأي معاملات مالية بعد</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {transactions.slice(0, 10).map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
                   <div className="flex items-center">
-                    <span className="text-2xl mr-3">
+                    <div className="text-3xl mr-4">
                       {getTransactionIcon(transaction.transaction_type)}
-                    </span>
+                    </div>
                     <div>
-                      <div className="font-bold">
+                      <div className="font-semibold text-gray-800">
                         {getTransactionText(transaction.transaction_type)}
                       </div>
                       <div className="text-sm text-gray-600">
                         {transaction.description}
                       </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(transaction.created_at).toLocaleDateString('ar-IQ', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`font-bold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className={`font-bold text-lg ${getTransactionColor(transaction.transaction_type)}`}>
                       {transaction.amount > 0 ? '+' : ''}{transaction.amount.toLocaleString()} د.ع
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {new Date(transaction.created_at).toLocaleDateString('ar-IQ')}
+                    <div className="text-sm text-gray-500">
+                      الرصيد: {transaction.balance_after.toLocaleString()} د.ع
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+              
+              {transactions.length > 10 && (
+                <div className="text-center pt-4">
+                  <button className="btn-secondary-outline">
+                    عرض المزيد من المعاملات
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
