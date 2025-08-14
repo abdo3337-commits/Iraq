@@ -797,7 +797,7 @@ async def get_driver_earnings(
         if current_user["user_type"] != "driver":
             raise HTTPException(status_code=403, detail="هذه الخدمة متاحة للسائقين فقط")
         
-        user_id = current_user["user_id"]
+        user_id = str(current_user["_id"])
         now = datetime.utcnow()
         
         # Calculate date ranges
