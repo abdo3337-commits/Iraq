@@ -7,15 +7,20 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  Image,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import * as Location from 'expo-location';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+const { width, height } = Dimensions.get('window');
 
 // Types
 interface User {
@@ -45,6 +50,12 @@ interface RegisterData {
   email?: string;
   password: string;
   user_type: 'passenger' | 'driver';
+}
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  address?: string;
 }
 
 // Auth Context
@@ -169,37 +180,35 @@ const useAuth = () => {
   return context;
 };
 
-// Welcome Screen Component
+// Welcome Screen Component (Careem/Uber Style)
 const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   return (
     <View style={styles.welcomeContainer}>
-      <View style={styles.logoContainer}>
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoText}>🚌</Text>
+      <View style={styles.welcomeHeader}>
+        <View style={styles.logoContainer}>
+          <Ionicons name="car" size={60} color="#00C853" />
         </View>
-        <Text style={styles.appTitle}>الباص البرتقالي</Text>
-        <Text style={styles.appSubtitle}>Orange Bus</Text>
+        <Text style={styles.appTitle}>مرحباً بك</Text>
+        <Text style={styles.appSubtitle}>نقل آمن ومريح في الأنبار</Text>
       </View>
       
       <View style={styles.welcomeContent}>
-        <Text style={styles.welcomeTitle}>مرحباً بك في الباص البرتقالي</Text>
-        <Text style={styles.welcomeDescription}>
-          تطبيق النقل الذكي المخصص لمحافظة الأنبار{'\n'}
-          رحلات آمنة ومريحة بين يديك
-        </Text>
-        
         <View style={styles.featuresList}>
           <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>📍</Text>
+            <MaterialIcons name="location-on" size={24} color="#00C853" />
             <Text style={styles.featureText}>تتبع مباشر للرحلة</Text>
           </View>
           <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>💬</Text>
-            <Text style={styles.featureText}>محادثة مع السائق</Text>
+            <MaterialIcons name="chat" size={24} color="#00C853" />
+            <Text style={styles.featureText}>تواصل مع السائق</Text>
           </View>
           <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>⭐</Text>
-            <Text style={styles.featureText}>نظام تقييم وأمان</Text>
+            <MaterialIcons name="star" size={24} color="#00C853" />
+            <Text style={styles.featureText}>تقييمات موثقة</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <MaterialIcons name="security" size={24} color="#00C853" />
+            <Text style={styles.featureText}>رحلات آمنة</Text>
           </View>
         </View>
       </View>
@@ -211,7 +220,7 @@ const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted })
   );
 };
 
-// Login Screen Component
+// Login Screen Component (Careem/Uber Style)
 const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToRegister }) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -235,53 +244,53 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.authContainer}>
+    <KeyboardAvoidingView style={styles.authContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.authContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.authHeader}>
+          <Ionicons name="car" size={50} color="#00C853" />
           <Text style={styles.authTitle}>تسجيل الدخول</Text>
-          
+        </View>
+        
+        <View style={styles.authForm}>
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>رقم الهاتف</Text>
+            <Ionicons name="phone-portrait" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={phone}
               onChangeText={setPhone}
-              placeholder="07xxxxxxxxx"
+              placeholder="رقم الهاتف"
               keyboardType="phone-pad"
-              textAlign="right"
+              placeholderTextColor="#999"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>كلمة المرور</Text>
+            <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={password}
               onChangeText={setPassword}
               placeholder="كلمة المرور"
               secureTextEntry
-              textAlign="right"
+              placeholderTextColor="#999"
             />
           </View>
 
           <TouchableOpacity 
-            style={[styles.authButton, loading && styles.authButtonDisabled]} 
+            style={[styles.primaryButton, loading && styles.primaryButtonDisabled]} 
             onPress={handleLogin}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.authButtonText}>تسجيل الدخول</Text>
+              <Text style={styles.primaryButtonText}>تسجيل الدخول</Text>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={onSwitchToRegister}>
-            <Text style={styles.switchText}>
-              ليس لديك حساب؟ <Text style={styles.switchLink}>سجل الآن</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={onSwitchToRegister}>
+            <Text style={styles.secondaryButtonText}>
+              ليس لديك حساب؟ <Text style={styles.linkText}>سجل الآن</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -290,7 +299,7 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
   );
 };
 
-// Register Screen Component
+// Register Screen Component (Careem/Uber Style)
 const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLogin }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -323,17 +332,17 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.authContainer}>
-          <Text style={styles.authTitle}>إنشاء حساب جديد</Text>
-          
+    <KeyboardAvoidingView style={styles.authContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.authContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.authHeader}>
+          <Ionicons name="car" size={50} color="#00C853" />
+          <Text style={styles.authTitle}>إنشاء حساب</Text>
+        </View>
+        
+        <View style={styles.authForm}>
           {/* User Type Selection */}
           <View style={styles.userTypeContainer}>
-            <Text style={styles.inputLabel}>نوع الحساب</Text>
+            <Text style={styles.sectionTitle}>اختر نوع الحساب</Text>
             <View style={styles.userTypeButtons}>
               <TouchableOpacity
                 style={[
@@ -342,6 +351,11 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
                 ]}
                 onPress={() => setUserType('passenger')}
               >
+                <Ionicons 
+                  name="person" 
+                  size={24} 
+                  color={userType === 'passenger' ? '#00C853' : '#666'} 
+                />
                 <Text style={[
                   styles.userTypeButtonText,
                   userType === 'passenger' && styles.userTypeButtonTextActive,
@@ -356,6 +370,11 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
                 ]}
                 onPress={() => setUserType('driver')}
               >
+                <Ionicons 
+                  name="car-sport" 
+                  size={24} 
+                  color={userType === 'driver' ? '#00C853' : '#666'} 
+                />
                 <Text style={[
                   styles.userTypeButtonText,
                   userType === 'driver' && styles.userTypeButtonTextActive,
@@ -367,68 +386,68 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>الاسم الكامل *</Text>
+            <Ionicons name="person" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={name}
               onChangeText={setName}
-              placeholder="أدخل اسمك الكامل"
-              textAlign="right"
+              placeholder="الاسم الكامل *"
+              placeholderTextColor="#999"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>رقم الهاتف *</Text>
+            <Ionicons name="phone-portrait" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={phone}
               onChangeText={setPhone}
-              placeholder="07xxxxxxxxx"
+              placeholder="رقم الهاتف *"
               keyboardType="phone-pad"
-              textAlign="right"
+              placeholderTextColor="#999"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>البريد الإلكتروني</Text>
+            <Ionicons name="mail" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={email}
               onChangeText={setEmail}
-              placeholder="example@email.com"
+              placeholder="البريد الإلكتروني (اختياري)"
               keyboardType="email-address"
               autoCapitalize="none"
-              textAlign="right"
+              placeholderTextColor="#999"
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>كلمة المرور *</Text>
+            <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={password}
               onChangeText={setPassword}
-              placeholder="كلمة المرور"
+              placeholder="كلمة المرور *"
               secureTextEntry
-              textAlign="right"
+              placeholderTextColor="#999"
             />
           </View>
 
           <TouchableOpacity 
-            style={[styles.authButton, loading && styles.authButtonDisabled]} 
+            style={[styles.primaryButton, loading && styles.primaryButtonDisabled]} 
             onPress={handleRegister}
             disabled={loading}
           >
             {loading ? (
               <ActivityIndicator color="#ffffff" />
             ) : (
-              <Text style={styles.authButtonText}>إنشاء الحساب</Text>
+              <Text style={styles.primaryButtonText}>إنشاء الحساب</Text>
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={onSwitchToLogin}>
-            <Text style={styles.switchText}>
-              لديك حساب بالفعل؟ <Text style={styles.switchLink}>سجل دخولك</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={onSwitchToLogin}>
+            <Text style={styles.secondaryButtonText}>
+              لديك حساب بالفعل؟ <Text style={styles.linkText}>سجل دخولك</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -437,68 +456,168 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
   );
 };
 
-// Dashboard Component
-const Dashboard: React.FC = () => {
+// Passenger Dashboard (Careem/Uber Style)
+const PassengerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
-
-  const handleLogout = () => {
-    Alert.alert(
-      'تسجيل الخروج',
-      'هل أنت متأكد من تسجيل الخروج؟',
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        { text: 'تسجيل الخروج', onPress: logout },
-      ]
-    );
-  };
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
 
   return (
     <View style={styles.dashboardContainer}>
+      {/* Header */}
       <View style={styles.dashboardHeader}>
-        <Text style={styles.welcomeMessage}>
-          مرحباً، {user?.name}
-        </Text>
-        <Text style={styles.userType}>
-          {user?.user_type === 'passenger' ? 'راكب' : 'سائق'}
-        </Text>
-        {user?.rating && (
-          <Text style={styles.userRating}>
-            التقييم: {user.rating} ⭐
-          </Text>
-        )}
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>مرحباً</Text>
+          <Text style={styles.userName}>{user?.name}</Text>
+        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={40} color="#00C853" />
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.statsCard}>
-        <Text style={styles.statsTitle}>إحصائياتك</Text>
-        <Text style={styles.statsText}>
-          إجمالي الرحلات: {user?.total_rides}
-        </Text>
+      {/* Map Placeholder */}
+      <View style={styles.mapContainer}>
+        <View style={styles.mapPlaceholder}>
+          <Ionicons name="map" size={80} color="#E0E0E0" />
+          <Text style={styles.mapPlaceholderText}>الخريطة ستظهر هنا</Text>
+        </View>
       </View>
 
-      <View style={styles.dashboardActions}>
-        {user?.user_type === 'passenger' ? (
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionButtonText}>طلب رحلة</Text>
+      {/* Ride Options */}
+      <View style={styles.rideOptionsContainer}>
+        <Text style={styles.sectionTitle}>إلى أين تريد الذهاب؟</Text>
+        
+        <TouchableOpacity 
+          style={styles.locationInput}
+          onPress={() => setLocationModalVisible(true)}
+        >
+          <Ionicons name="location" size={20} color="#00C853" />
+          <Text style={styles.locationInputText}>اختر الوجهة</Text>
+          <Ionicons name="chevron-forward" size={20} color="#666" />
+        </TouchableOpacity>
+
+        <View style={styles.quickActions}>
+          <TouchableOpacity style={styles.quickActionButton}>
+            <Ionicons name="home" size={24} color="#00C853" />
+            <Text style={styles.quickActionText}>المنزل</Text>
           </TouchableOpacity>
-        ) : (
-          <>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={styles.actionButtonText}>بدء العمل</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.secondaryButton]}>
-              <Text style={[styles.actionButtonText, styles.secondaryButtonText]}>
-                عرض الرحلات المتاحة
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
+          <TouchableOpacity style={styles.quickActionButton}>
+            <Ionicons name="business" size={24} color="#00C853" />
+            <Text style={styles.quickActionText}>العمل</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickActionButton}>
+            <Ionicons name="time" size={24} color="#00C853" />
+            <Text style={styles.quickActionText}>آخر رحلة</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>طلب رحلة</Text>
+        </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutButtonText}>تسجيل الخروج</Text>
-      </TouchableOpacity>
+      {/* Location Selection Modal */}
+      <Modal
+        visible={locationModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>اختر الوجهة</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <View style={styles.modalContent}>
+            <Text style={styles.comingSoonText}>قريباً: خريطة تفاعلية واختيار الموقع</Text>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
+};
+
+// Driver Dashboard (Careem/Uber Style)
+const DriverDashboard: React.FC = () => {
+  const { user, logout } = useAuth();
+  const [isOnline, setIsOnline] = useState(false);
+
+  return (
+    <View style={styles.dashboardContainer}>
+      {/* Header */}
+      <View style={styles.dashboardHeader}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>مرحباً كابتن</Text>
+          <Text style={styles.userName}>{user?.name}</Text>
+        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={40} color="#00C853" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Status Card */}
+      <View style={styles.statusCard}>
+        <View style={styles.statusHeader}>
+          <Text style={styles.statusTitle}>حالة العمل</Text>
+          <TouchableOpacity 
+            style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
+            onPress={() => setIsOnline(!isOnline)}
+          >
+            <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
+              {isOnline ? 'متصل' : 'غير متصل'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.statusDescription}>
+          {isOnline ? 'يمكنك الآن استقبال طلبات الرحلات' : 'اضغط للاتصال واستقبال الرحلات'}
+        </Text>
+      </View>
+
+      {/* Statistics */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>12</Text>
+          <Text style={styles.statLabel}>رحلات اليوم</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>4.8</Text>
+          <Text style={styles.statLabel}>التقييم</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statNumber}>85,000</Text>
+          <Text style={styles.statLabel}>الأرباح (د.ع)</Text>
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.driverActions}>
+        <TouchableOpacity style={styles.actionCard}>
+          <Ionicons name="list" size={24} color="#00C853" />
+          <Text style={styles.actionCardText}>رحلاتي</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionCard}>
+          <Ionicons name="cash" size={24} color="#00C853" />
+          <Text style={styles.actionCardText}>الأرباح</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionCard}>
+          <Ionicons name="car" size={24} color="#00C853" />
+          <Text style={styles.actionCardText}>معلومات السيارة</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+// Main Dashboard Component
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+
+  if (user?.user_type === 'passenger') {
+    return <PassengerDashboard />;
+  } else {
+    return <DriverDashboard />;
+  }
 };
 
 // Main App Component
@@ -509,7 +628,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" />
+        <StatusBar style="dark" backgroundColor="#FFFFFF" />
         <AppContent 
           showWelcome={showWelcome}
           setShowWelcome={setShowWelcome}
@@ -533,7 +652,7 @@ const AppContent: React.FC<{
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+        <ActivityIndicator size="large" color="#00C853" />
         <Text style={styles.loadingText}>جارٍ التحميل...</Text>
       </View>
     );
@@ -554,272 +673,429 @@ const AppContent: React.FC<{
   return <RegisterScreen onSwitchToLogin={() => setAuthMode('login')} />;
 };
 
-// Styles
+// Styles (Careem/Uber Style)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
     color: '#666666',
-    fontFamily: 'System',
   },
+  
   // Welcome Screen Styles
   welcomeContainer: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+  },
+  welcomeHeader: {
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   logoContainer: {
-    alignItems: 'center',
-    marginTop: 60,
-  },
-  logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FF6B35',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0F9F0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  logoText: {
-    fontSize: 48,
+    marginBottom: 24,
   },
   appTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1A1A1A',
-    marginBottom: 4,
-    textAlign: 'center',
+    marginBottom: 8,
   },
   appSubtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666666',
     textAlign: 'center',
   },
   welcomeContent: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  welcomeDescription: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 32,
   },
   featuresList: {
-    width: '100%',
+    paddingVertical: 20,
   },
   featureItem: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 16,
-  },
-  featureIcon: {
-    fontSize: 24,
-    marginLeft: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    marginBottom: 12,
   },
   featureText: {
     fontSize: 16,
     color: '#1A1A1A',
+    marginLeft: 16,
     flex: 1,
-    textAlign: 'right',
   },
   getStartedBtn: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
+    backgroundColor: '#00C853',
+    paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 40,
+    shadowColor: '#00C853',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   getStartedText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
+
   // Auth Screens Styles
   authContainer: {
-    padding: 24,
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  authContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+  },
+  authHeader: {
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   authTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 32,
+    marginTop: 16,
   },
-  inputContainer: {
+  authForm: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
     marginBottom: 16,
   },
-  inputLabel: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    marginBottom: 8,
-    textAlign: 'right',
-    fontWeight: '500',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 4,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  textInput: {
+    flex: 1,
     fontSize: 16,
-    backgroundColor: '#F8F8F8',
+    paddingVertical: 14,
+    color: '#1A1A1A',
   },
   userTypeContainer: {
     marginBottom: 24,
   },
   userTypeButtons: {
-    flexDirection: 'row-reverse',
+    flexDirection: 'row',
     gap: 12,
   },
   userTypeButton: {
     flex: 1,
-    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
-    alignItems: 'center',
+    borderColor: '#E8E8E8',
+    backgroundColor: '#F8F8F8',
   },
   userTypeButtonActive: {
-    borderColor: '#FF6B35',
-    backgroundColor: '#FFF5F2',
+    borderColor: '#00C853',
+    backgroundColor: '#F0F9F0',
   },
   userTypeButtonText: {
     fontSize: 16,
     color: '#666666',
     fontWeight: '500',
+    marginLeft: 8,
   },
   userTypeButtonTextActive: {
-    color: '#FF6B35',
+    color: '#00C853',
     fontWeight: 'bold',
   },
-  authButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
+  primaryButton: {
+    backgroundColor: '#00C853',
+    paddingVertical: 18,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 16,
+    marginTop: 20,
+    shadowColor: '#00C853',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  authButtonDisabled: {
+  primaryButtonDisabled: {
     opacity: 0.6,
   },
-  authButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  switchText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666666',
-  },
-  switchLink: {
-    color: '#FF6B35',
-    fontWeight: 'bold',
-  },
-  // Dashboard Styles
-  dashboardContainer: {
-    flex: 1,
-    padding: 24,
-  },
-  dashboardHeader: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  welcomeMessage: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  userType: {
-    fontSize: 16,
-    color: '#FF6B35',
-    fontWeight: '500',
-  },
-  userRating: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 4,
-  },
-  statsCard: {
-    backgroundColor: '#F8F8F8',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 32,
-  },
-  statsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  statsText: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  dashboardActions: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  actionButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  actionButtonText: {
+  primaryButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#FF6B35',
+    alignItems: 'center',
+    marginTop: 20,
   },
   secondaryButtonText: {
-    color: '#FF6B35',
+    fontSize: 16,
+    color: '#666666',
   },
-  logoutButton: {
-    backgroundColor: '#FF4444',
-    paddingVertical: 14,
-    borderRadius: 12,
+  linkText: {
+    color: '#00C853',
+    fontWeight: 'bold',
+  },
+
+  // Dashboard Styles
+  dashboardContainer: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  dashboardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  greeting: {
+    fontSize: 16,
+    color: '#666666',
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginTop: 2,
+  },
+  profileButton: {
+    padding: 8,
+  },
+
+  // Map Container
+  mapContainer: {
+    flex: 1,
+    backgroundColor: '#E8E8E8',
+  },
+  mapPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  logoutButtonText: {
-    color: '#FFFFFF',
+  mapPlaceholderText: {
     fontSize: 16,
+    color: '#999999',
+    marginTop: 16,
+  },
+
+  // Ride Options
+  rideOptionsContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  locationInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: 20,
+  },
+  locationInputText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#666666',
+    marginLeft: 12,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  quickActionButton: {
+    alignItems: 'center',
+    padding: 12,
+  },
+  quickActionText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 4,
+  },
+
+  // Driver Specific Styles
+  statusCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 24,
+    padding: 20,
+    borderRadius: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statusTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  statusToggle: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#E8E8E8',
+  },
+  statusToggleActive: {
+    backgroundColor: '#00C853',
+  },
+  statusToggleText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666666',
+  },
+  statusToggleTextActive: {
+    color: '#FFFFFF',
+  },
+  statusDescription: {
+    fontSize: 14,
+    color: '#666666',
+    lineHeight: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#00C853',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  driverActions: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    gap: 12,
+  },
+  actionCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  actionCardText: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 8,
+    textAlign: 'center',
+  },
+
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  comingSoonText: {
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 
