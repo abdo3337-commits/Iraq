@@ -17,6 +17,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import LocationSearchModal from './LocationSearchModal';
+import { Colors, Spacing, BorderRadius, FontSizes, Shadows } from './styles';
 
 interface LocationData {
   latitude: number;
