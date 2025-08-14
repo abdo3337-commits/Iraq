@@ -945,6 +945,7 @@ const DriverDashboard: React.FC = () => {
   const [availableRides, setAvailableRides] = useState([]);
   const [availableDeliveries, setAvailableDeliveries] = useState([]);
   const [activeTab, setActiveTab] = useState<'rides' | 'deliveries'>('rides');
+  const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
