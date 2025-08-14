@@ -1727,6 +1727,38 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginTop: Spacing.md,
   },
+  loginMethodContainer: {
+    flexDirection: 'row',
+    backgroundColor: Colors.sectionBackground,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.xs,
+    marginBottom: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  methodButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.gray,
+    gap: Spacing.xs,
+  },
+  methodButtonActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  methodButtonText: {
+    fontSize: FontSizes.sm,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+  methodButtonTextActive: {
+    color: Colors.white,
+  },
   authForm: {
     flex: 1,
   },
