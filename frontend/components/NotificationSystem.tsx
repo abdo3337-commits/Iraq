@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Colors, Spacing, BorderRadius, FontSizes, Shadows } from './styles';
 
