@@ -762,7 +762,7 @@ async def upload_document(
         
         # Save document record
         document_record = {
-            "user_id": current_user["user_id"],
+            "user_id": str(current_user["_id"]),
             "document_type": document_type,
             "filename": unique_filename,
             "original_filename": file.filename,
