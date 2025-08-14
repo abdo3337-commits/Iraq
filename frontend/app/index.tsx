@@ -1490,6 +1490,11 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
+  authLogoImage: {
+    width: 80,
+    height: 80,
+    marginBottom: Spacing.md,
+  },
   authTitle: {
     fontSize: FontSizes.xl,
     fontWeight: 'bold',
