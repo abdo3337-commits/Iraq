@@ -237,8 +237,8 @@ class OrangeBusAPITester:
         
         update_data = {
             "name": "أحمد محمد العراقي المحدث",
-            "phone": "+964770123456",
-            "email": "ahmed.updated@gmail.com",
+            "phone": self.passenger_phone,
+            "email": f"ahmed.updated{self.test_suffix}@gmail.com",
             "user_type": "passenger"
         }
         
