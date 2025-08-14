@@ -746,6 +746,187 @@ async def request_ride(
     
     return RideResponse(**response_data)
 
+@api_router.get("/rides/available", response_model=List[RideResponse])
+async def get_available_rides(
+    vehicle_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    if current_user["user_type"] != "driver":
+        raise HTTPException(status_code=403, detail="Only drivers can view available rides")
+    
+    # Build query for available rides
+    query = {
+        "$or": [
+            {"status": RideStatus.REQUESTED},
+            {
+                "status": RideStatus.SCHEDULED,
+                "scheduled_time": {
+                    "$lte": datetime.utcnow() + timedelta(minutes=30)
+                }
+            }
+        ]
+    }
+    
+    # Filter by vehicle type if specified
+    if vehicle_type:
+        query["vehicle_type"] = vehicle_type
+    
+    rides = await db.rides.find(query).to_list(50)
+    
+    result = []
+    for ride in rides:
+        passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+        
+        ride_data = serialize_user(ride)
+        ride_data["passenger_info"] = UserResponse(**serialize_user(passenger))
+        ride_data["driver_info"] = None
+        
+        result.append(RideResponse(**ride_data))
+    
+    return result
+
+@api_router.put("/rides/{ride_id}/accept")
+async def accept_ride(ride_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["user_type"] != "driver":
+        raise HTTPException(status_code=403, detail="Only drivers can accept rides")
+    
+    # Check if ride exists and is available
+    ride = await db.rides.find_one({
+        "_id": ObjectId(ride_id), 
+        "status": {"$in": [RideStatus.REQUESTED, RideStatus.SCHEDULED]}
+    })
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found or not available")
+    
+    # Update ride with driver info
+    await db.rides.update_one(
+        {"_id": ObjectId(ride_id)},
+        {
+            "$set": {
+                "driver_id": str(current_user["_id"]),
+                "status": RideStatus.ACCEPTED,
+                "accepted_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    # Send system message to chat
+    await create_system_message(
+        ride_id, 
+        "ride",
+        f"تم قبول طلب الرحلة من قبل السائق {current_user['name']}"
+    )
+    
+    # Notify passenger via WebSocket
+    passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+    if passenger:
+        await manager.send_personal_message({
+            "type": "ride_accepted",
+            "ride_id": ride_id,
+            "driver_name": current_user["name"],
+            "driver_info": current_user.get("driver_info", {}),
+            "message": "تم قبول طلب الرحلة الخاص بك!"
+        }, str(passenger["_id"]))
+    
+    return {"message": "Ride accepted successfully"}
+
+@api_router.put("/rides/{ride_id}/status")
+async def update_ride_status(
+    ride_id: str, 
+    status: str,
+    distance_km: Optional[float] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update ride status"""
+    ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    
+    if str(current_user["_id"]) != ride.get("driver_id"):
+        raise HTTPException(status_code=403, detail="Only the assigned driver can update ride status")
+    
+    valid_statuses = [RideStatus.IN_PROGRESS, RideStatus.COMPLETED, RideStatus.CANCELLED]
+    if status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    update_data = {
+        "status": status,
+        "updated_at": datetime.utcnow()
+    }
+    
+    if status == RideStatus.IN_PROGRESS:
+        update_data["started_at"] = datetime.utcnow()
+        await create_system_message(ride_id, "ride", "بدأت الرحلة")
+    
+    elif status == RideStatus.COMPLETED:
+        update_data["ended_at"] = datetime.utcnow()
+        
+        # Calculate duration and final fare
+        started_at = ride.get("started_at")
+        if started_at:
+            duration = datetime.utcnow() - started_at
+            update_data["duration_minutes"] = int(duration.total_seconds() / 60)
+        
+        if distance_km:
+            update_data["distance_km"] = distance_km
+        
+        # Calculate actual fare
+        actual_fare = await calculate_ride_fare(
+            ride, 
+            update_data.get("duration_minutes"), 
+            distance_km
+        )
+        update_data["actual_fare"] = actual_fare
+        
+        await create_system_message(
+            ride_id, 
+            "ride", 
+            f"تمت الرحلة بنجاح. التكلفة النهائية: {actual_fare} د.ع"
+        )
+        
+        # Update total rides count
+        await db.users.update_one(
+            {"_id": ObjectId(ride["passenger_id"])},
+            {"$inc": {"total_rides": 1}}
+        )
+        
+        await db.users.update_one(
+            {"_id": ObjectId(ride["driver_id"])},
+            {"$inc": {"total_rides": 1}}
+        )
+    
+    elif status == RideStatus.CANCELLED:
+        await create_system_message(ride_id, "ride", "تم إلغاء الرحلة")
+    
+    await db.rides.update_one(
+        {"_id": ObjectId(ride_id)},
+        {"$set": update_data}
+    )
+    
+    return {"message": f"Ride status updated to {status}", "actual_fare": update_data.get("actual_fare")}
+
+@api_router.get("/rides/my-rides", response_model=List[RideResponse])
+async def get_my_rides(current_user: dict = Depends(get_current_user)):
+    if current_user["user_type"] == "passenger":
+        rides = await db.rides.find({"passenger_id": str(current_user["_id"])}).sort("created_at", -1).to_list(50)
+    else:
+        rides = await db.rides.find({"driver_id": str(current_user["_id"])}).sort("created_at", -1).to_list(50)
+    
+    result = []
+    for ride in rides:
+        passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+        driver = None
+        if ride.get("driver_id"):
+            driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
+        
+        ride_data = serialize_user(ride)
+        ride_data["passenger_info"] = UserResponse(**serialize_user(passenger))
+        ride_data["driver_info"] = DriverResponse(**serialize_user(driver)) if driver else None
+        
+        result.append(RideResponse(**ride_data))
+    
+    return result
+
 # =====================================================
 # DELIVERY MANAGEMENT ENDPOINTS
 # =====================================================
