@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """
-Orange Bus Backend API Testing Suite
-Tests the ride-sharing app backend for Anbar Governorate, Iraq
+Abu Al-Gharbiya (أبو الغربية) Backend API Testing Suite
+Comprehensive testing for ride-sharing and delivery app backend for Anbar Governorate, Iraq
 """
 
 import requests
 import json
 import time
 import random
-from datetime import datetime
+import websocket
+import threading
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration
 BASE_URL = "https://smart-taxi-2.preview.emergentagent.com/api"
+WS_URL = "wss://smart-taxi-2.preview.emergentagent.com/ws"
 TIMEOUT = 30
 
 class OrangeBusAPITester:
