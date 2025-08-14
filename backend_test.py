@@ -101,8 +101,8 @@ class OrangeBusAPITester:
         
         passenger_data = {
             "name": "أحمد محمد العراقي",
-            "phone": "+964770123456",
-            "email": "ahmed.iraqi@gmail.com",
+            "phone": self.passenger_phone,
+            "email": f"ahmed.iraqi{self.test_suffix}@gmail.com",
             "user_type": "passenger",
             "password": "SecurePass123!"
         }
