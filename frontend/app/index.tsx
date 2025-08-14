@@ -642,10 +642,7 @@ const Dashboard: React.FC = () => {
           onHistoryPress={() => setHistoryModalVisible(true)}
           onSettingsPress={() => setSettingsModalVisible(true)}
         />
-        <NotificationSystem 
-          onNotificationPress={handleNotificationPress}
-          onActionPress={handleNotificationAction}
-        />
+        {/* NotificationSystem will be added later */}
         
         {/* Modals */}
         <ProfileScreen
