@@ -672,25 +672,43 @@ class AbuAlGharbiyaAPITester:
             self.log_result("Unified rating system", False, "No passenger token available")
             return
         
-        # Test ride rating if ride is available
-        if self.test_ride_id:
-            ride_rating = {
-                "service_id": self.test_ride_id,
-                "service_type": "ride",
-                "rating": 5,
-                "comment": "سائق ممتاز ومهذب، وصل في الوقت المحدد والسيارة نظيفة"
-            }
-            
-            success, response = self.make_request("POST", "/ratings", ride_rating, self.passenger_token)
+        # Test ride rating if ride is available - complete the ride first
+        if self.test_ride_id and self.driver_token:
+            # Accept and complete the ride first
+            success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/accept", token=self.driver_token)
             if success and response.status_code == 200:
-                data = response.json()
-                if data.get("rating") == 5 and data.get("service_type") == "ride":
-                    self.log_result("Ride rating", True, "Ride rated successfully with Arabic comment")
+                # Start the ride
+                success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status", 
+                                                    params={"status": "in_progress"}, token=self.driver_token)
+                if success and response.status_code == 200:
+                    # Complete the ride
+                    success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status", 
+                                                        params={"status": "completed", "distance_km": 10.5}, token=self.driver_token)
+                    if success and response.status_code == 200:
+                        # Now rate the ride
+                        ride_rating = {
+                            "service_id": self.test_ride_id,
+                            "service_type": "ride",
+                            "rating": 5,
+                            "comment": "سائق ممتاز ومهذب، وصل في الوقت المحدد والسيارة نظيفة"
+                        }
+                        
+                        success, response = self.make_request("POST", "/ratings", ride_rating, self.passenger_token)
+                        if success and response.status_code == 200:
+                            data = response.json()
+                            if data.get("rating") == 5 and data.get("service_type") == "ride":
+                                self.log_result("Ride rating", True, "Ride rated successfully with Arabic comment")
+                            else:
+                                self.log_result("Ride rating", False, f"Invalid rating data: {data}")
+                        else:
+                            error_msg = response.text if success else str(response)
+                            self.log_result("Ride rating", False, error_msg)
+                    else:
+                        self.log_result("Ride rating", False, "Could not complete ride for rating")
                 else:
-                    self.log_result("Ride rating", False, f"Invalid rating data: {data}")
+                    self.log_result("Ride rating", False, "Could not start ride for rating")
             else:
-                error_msg = response.text if success else str(response)
-                self.log_result("Ride rating", False, error_msg)
+                self.log_result("Ride rating", False, "Could not accept ride for rating")
         
         # Test delivery rating if delivery is available
         if self.test_delivery_id:
