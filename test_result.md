@@ -143,11 +143,11 @@ backend:
 
   - task: "Real-time Communication API"
     implemented: true
-    working: "NA"
+    working: false
     file: "server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
@@ -155,6 +155,9 @@ backend:
         - working: "NA"
           agent: "main"
           comment: "Implemented complete real-time chat system with WebSocket connections, message sending, chat history, system messages, and real-time notifications. Features include: WebSocket connection manager, chat endpoints, message history, real-time messaging between passengers and drivers, and system messages for ride status updates. Ready for testing."
+        - working: false
+          agent: "testing"
+          comment: "COMPREHENSIVE TESTING COMPLETED: WebSocket endpoint implemented correctly but failing due to infrastructure issues (502 Bad Gateway from proxy/load balancer). ✅ Chat system API endpoints working perfectly ✅ Message sending and retrieval for both rides and deliveries ✅ System messages for status updates ✅ Arabic language support in messages ✅ Unified chat for both services. WebSocket connection blocked by external infrastructure, not code issues."
 
   - task: "Rating System API"
     implemented: true
