@@ -45,7 +45,7 @@ class UserType(str):
     PASSENGER = "passenger"
     DRIVER = "driver"
 
-class RideStatus(str):
+class RideStatus:
     REQUESTED = "requested"
     ACCEPTED = "accepted"
     IN_PROGRESS = "in_progress"
