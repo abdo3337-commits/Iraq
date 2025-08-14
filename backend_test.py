@@ -23,6 +23,9 @@ class OrangeBusAPITester:
         self.passenger_id = None
         self.driver_id = None
         self.test_ride_id = None
+        self.test_suffix = str(random.randint(1000, 9999))  # Unique suffix for each test run
+        self.passenger_phone = f"+96477012{self.test_suffix}"
+        self.driver_phone = f"+96477123{self.test_suffix}"
         self.results = {
             "passed": 0,
             "failed": 0,
