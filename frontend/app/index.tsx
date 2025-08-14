@@ -390,7 +390,11 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
     <KeyboardAvoidingView style={styles.authContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.authContent} showsVerticalScrollIndicator={false}>
         <View style={styles.authHeader}>
-          <Text style={styles.logoText}>أبو الغربية</Text>
+          <Image 
+            source={{ uri: 'https://customer-assets.emergentagent.com/job_aburide/artifacts/4ksqh5gf_IMG_1449.jpeg' }}
+            style={styles.authLogoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.authTitle}>إنشاء حساب</Text>
         </View>
         
