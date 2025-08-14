@@ -7,6 +7,7 @@ Tests the ride-sharing app backend for Anbar Governorate, Iraq
 import requests
 import json
 import time
+import random
 from datetime import datetime
 from typing import Dict, Any, Optional
 
