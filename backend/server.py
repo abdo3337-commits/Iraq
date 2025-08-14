@@ -71,6 +71,38 @@ api_router = APIRouter(prefix="/api")
 
 # =====================================================
 # MODELS
+class OTPRequest(BaseModel):
+    phone: str
+    action: Literal["login", "register"] = "login"
+
+class OTPVerification(BaseModel):
+    phone: str
+    otp: str
+
+class UserRegistration(BaseModel):
+    name: str
+    phone: str
+    email: Optional[str] = None
+    password: str
+    user_type: Literal["passenger", "driver"]
+    otp: str
+
+class UserLogin(BaseModel):
+    phone: str
+    password: Optional[str] = None
+
+class DocumentUpload(BaseModel):
+    document_type: Literal["national_id", "driving_license", "vehicle_registration", "insurance", "vehicle_photos"]
+    
+class EarningsRequest(BaseModel):
+    period: Literal["today", "week", "month"] = "today"
+
+# OTP Storage (In production, use Redis or database)
+otp_storage = {}
+
+def generate_otp():
+    """Generate a 6-digit OTP"""
+    return str(random.randint(100000, 999999))
 # =====================================================
 
 class UserType(str):
