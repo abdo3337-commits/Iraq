@@ -1787,6 +1787,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  headerActionButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.sectionBackground,
+  },
   headerTitle: {
     fontSize: FontSizes.lg,
     fontWeight: 'bold',
