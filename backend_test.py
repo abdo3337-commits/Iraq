@@ -126,8 +126,8 @@ class OrangeBusAPITester:
         
         driver_data = {
             "name": "سعد علي الأنباري",
-            "phone": "+964771234567",
-            "email": "saad.driver@gmail.com",
+            "phone": self.driver_phone,
+            "email": f"saad.driver{self.test_suffix}@gmail.com",
             "user_type": "driver",
             "password": "DriverPass456!"
         }
