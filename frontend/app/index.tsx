@@ -1020,6 +1020,10 @@ const DriverDashboard: React.FC = () => {
     }
   };
 
+  const handleDeliveryRequested = (deliveryData: any) => {
+    fetchAvailableServices();
+  };
+
   const allMarkers = [
     ...availableRides.map((ride: any) => ({
       id: `ride-${ride.id}`,
