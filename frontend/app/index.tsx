@@ -69,7 +69,7 @@ interface LocationData {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 // API Base URL
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://smart-taxi-2.preview.emergentagent.com';
+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://aburide.preview.emergentagent.com';
 
 // API Functions
 const apiCall = async (endpoint: string, options: any = {}) => {

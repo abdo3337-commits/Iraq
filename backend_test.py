@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://smart-taxi-2.preview.emergentagent.com/api"
+BASE_URL = "https://aburide.preview.emergentagent.com/api"
 WS_URL = "wss://smart-taxi-2.preview.emergentagent.com/ws"
 TIMEOUT = 30
 
