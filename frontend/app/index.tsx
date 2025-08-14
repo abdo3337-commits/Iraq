@@ -13,6 +13,7 @@ import {
   Dimensions,
   Modal,
   FlatList,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -23,6 +24,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import MapView from '../components/MapView';
 import LocationSearchModal from '../components/LocationSearchModal';
 import ChatModal from '../components/ChatModal';
+import DeliveryRequestModal from '../components/DeliveryRequestModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,6 +38,7 @@ interface User {
   profile_image?: string;
   rating?: number;
   total_rides: number;
+  total_deliveries: number;
   is_active: boolean;
 }
 
@@ -184,35 +187,37 @@ const useAuth = () => {
   return context;
 };
 
-// Welcome Screen Component (Careem/Uber Style)
+// Welcome Screen Component (Updated with new branding)
 const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   return (
     <View style={styles.welcomeContainer}>
       <View style={styles.welcomeHeader}>
         <View style={styles.logoContainer}>
-          <Ionicons name="car" size={60} color="#00C853" />
+          {/* Logo placeholder - we'll add the actual logo here */}
+          <Text style={styles.logoText}>أبو الغربية</Text>
+          <Text style={styles.logoSubtext}>Abu Al-Gharbiya</Text>
         </View>
         <Text style={styles.appTitle}>مرحباً بك</Text>
-        <Text style={styles.appSubtitle}>نقل آمن ومريح في الأنبار</Text>
+        <Text style={styles.appSubtitle}>نقل وتوصيل آمن ومريح في الأنبار</Text>
       </View>
       
       <View style={styles.welcomeContent}>
         <View style={styles.featuresList}>
           <View style={styles.featureItem}>
+            <MaterialIcons name="directions-car" size={24} color="#00C853" />
+            <Text style={styles.featureText}>خدمة النقل والمشاوير</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <MaterialIcons name="local-shipping" size={24} color="#00C853" />
+            <Text style={styles.featureText}>توصيل الطرود والمواد</Text>
+          </View>
+          <View style={styles.featureItem}>
             <MaterialIcons name="location-on" size={24} color="#00C853" />
             <Text style={styles.featureText}>تتبع مباشر للرحلة</Text>
           </View>
           <View style={styles.featureItem}>
-            <MaterialIcons name="chat" size={24} color="#00C853" />
-            <Text style={styles.featureText}>تواصل مع السائق</Text>
-          </View>
-          <View style={styles.featureItem}>
             <MaterialIcons name="star" size={24} color="#00C853" />
             <Text style={styles.featureText}>تقييمات موثقة</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <MaterialIcons name="security" size={24} color="#00C853" />
-            <Text style={styles.featureText}>رحلات آمنة</Text>
           </View>
         </View>
       </View>
@@ -224,7 +229,40 @@ const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted })
   );
 };
 
-// Login Screen Component (Careem/Uber Style)
+// Service Selection Component
+const ServiceSelection: React.FC<{ onServiceSelect: (service: 'ride' | 'delivery') => void }> = ({ onServiceSelect }) => {
+  return (
+    <View style={styles.serviceContainer}>
+      <Text style={styles.serviceTitle}>كيف يمكننا مساعدتك؟</Text>
+      
+      <View style={styles.serviceOptions}>
+        <TouchableOpacity 
+          style={styles.serviceOption}
+          onPress={() => onServiceSelect('ride')}
+        >
+          <View style={styles.serviceIconContainer}>
+            <Ionicons name="car" size={40} color="#00C853" />
+          </View>
+          <Text style={styles.serviceOptionTitle}>طلب رحلة</Text>
+          <Text style={styles.serviceOptionDesc}>انتقل من مكان إلى آخر بأمان</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.serviceOption}
+          onPress={() => onServiceSelect('delivery')}
+        >
+          <View style={styles.serviceIconContainer}>
+            <MaterialIcons name="local-shipping" size={40} color="#FF6B35" />
+          </View>
+          <Text style={styles.serviceOptionTitle}>طلب توصيل</Text>
+          <Text style={styles.serviceOptionDesc}>توصيل طرودك ومشترياتك</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+// Login Screen Component
 const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToRegister }) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -251,7 +289,7 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
     <KeyboardAvoidingView style={styles.authContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.authContent} showsVerticalScrollIndicator={false}>
         <View style={styles.authHeader}>
-          <Ionicons name="car" size={50} color="#00C853" />
+          <Text style={styles.logoText}>أبو الغربية</Text>
           <Text style={styles.authTitle}>تسجيل الدخول</Text>
         </View>
         
@@ -303,7 +341,7 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
   );
 };
 
-// Register Screen Component (Careem/Uber Style)
+// Register Screen Component
 const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToLogin }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -339,7 +377,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
     <KeyboardAvoidingView style={styles.authContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.authContent} showsVerticalScrollIndicator={false}>
         <View style={styles.authHeader}>
-          <Ionicons name="car" size={50} color="#00C853" />
+          <Text style={styles.logoText}>أبو الغربية</Text>
           <Text style={styles.authTitle}>إنشاء حساب</Text>
         </View>
         
@@ -364,7 +402,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
                   styles.userTypeButtonText,
                   userType === 'passenger' && styles.userTypeButtonTextActive,
                 ]}>
-                  راكب
+                  عميل
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -460,33 +498,41 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
   );
 };
 
-// Passenger Dashboard with Interactive Map and Chat
-const PassengerDashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+// Enhanced Dashboard with Service Selection
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [selectedService, setSelectedService] = useState<'ride' | 'delivery' | null>(null);
+
+  if (!selectedService && user?.user_type === 'passenger') {
+    return <ServiceSelection onServiceSelect={setSelectedService} />;
+  }
+
+  if (user?.user_type === 'passenger') {
+    if (selectedService === 'ride') {
+      return <PassengerDashboard onBack={() => setSelectedService(null)} />;
+    } else {
+      return <DeliveryDashboard onBack={() => setSelectedService(null)} />;
+    }
+  } else {
+    return <DriverDashboard />;
+  }
+};
+
+// Passenger Dashboard for Rides
+const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const { user } = useAuth();
   const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<LocationData | null>(null);
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'pickup' | 'destination'>('pickup');
   const [rideRequested, setRideRequested] = useState(false);
-  const [myRides, setMyRides] = useState([]);
-  const [chatModalVisible, setChatModalVisible] = useState(false);
-  const [selectedRideId, setSelectedRideId] = useState<string | null>(null);
-  const [showRidesList, setShowRidesList] = useState(false);
+  const [vehicleType, setVehicleType] = useState<'standard' | 'vip'>('standard');
+  const [rideType, setRideType] = useState<'immediate' | 'scheduled' | 'open_ride'>('immediate');
 
   useEffect(() => {
     getCurrentLocation();
-    loadMyRides();
   }, []);
-
-  const loadMyRides = async () => {
-    try {
-      const rides = await apiCall('/rides/my-rides');
-      setMyRides(rides);
-    } catch (error) {
-      console.error('Error loading rides:', error);
-    }
-  };
 
   const getCurrentLocation = async () => {
     try {
@@ -519,31 +565,36 @@ const PassengerDashboard: React.FC = () => {
   };
 
   const handleRequestRide = async () => {
-    if (!pickupLocation || !destinationLocation) {
+    if (!pickupLocation || (!destinationLocation && rideType !== 'open_ride')) {
       Alert.alert('تنبيه', 'يرجى تحديد نقطة الانطلاق والوجهة');
       return;
     }
 
     try {
+      const rideData: any = {
+        pickup_location: pickupLocation,
+        ride_type: rideType,
+        vehicle_type: vehicleType,
+      };
+
+      if (rideType !== 'open_ride') {
+        rideData.destination_location = destinationLocation;
+      }
+
+      if (rideType === 'open_ride') {
+        rideData.max_duration_minutes = 480; // 8 hours max
+      }
+
       const response = await apiCall('/rides/request', {
         method: 'POST',
-        body: JSON.stringify({
-          pickup_location: pickupLocation,
-          destination_location: destinationLocation,
-        }),
+        body: JSON.stringify(rideData),
       });
 
       setRideRequested(true);
-      loadMyRides(); // Refresh rides list
-      Alert.alert('تم بنجاح', 'تم طلب الرحلة بنجاح! سيتم إشعارك عند قبول السائق للرحلة');
+      Alert.alert('تم بنجاح', 'تم طلب الرحلة بنجاح!');
     } catch (error: any) {
       Alert.alert('خطأ', error.message);
     }
-  };
-
-  const openChat = (rideId: string) => {
-    setSelectedRideId(rideId);
-    setChatModalVisible(true);
   };
 
   const mapMarkers = [
@@ -565,177 +616,147 @@ const PassengerDashboard: React.FC = () => {
     }] : []),
   ];
 
-  const renderRideItem = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      style={styles.rideItem}
-      onPress={() => item.driver_id && openChat(item.id)}
-    >
-      <View style={styles.rideItemHeader}>
-        <Text style={styles.rideDestination}>
-          إلى: {item.destination_location.address}
-        </Text>
-        <Text style={[styles.rideStatus, getStatusStyle(item.status)]}>
-          {getStatusText(item.status)}
-        </Text>
-      </View>
-      <Text style={styles.rideTime}>
-        {new Date(item.created_at).toLocaleDateString('ar-IQ')}
-      </Text>
-      {item.driver_info && (
-        <View style={styles.driverInfo}>
-          <Text style={styles.driverName}>السائق: {item.driver_info.name}</Text>
-          {item.driver_id && (
-            <TouchableOpacity 
-              style={styles.chatButton}
-              onPress={() => openChat(item.id)}
-            >
-              <Ionicons name="chatbubble" size={16} color="#00C853" />
-              <Text style={styles.chatButtonText}>محادثة</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-
-  const getStatusText = (status: string) => {
-    const statusMap: { [key: string]: string } = {
-      'requested': 'في انتظار السائق',
-      'accepted': 'تم قبول الرحلة',
-      'in_progress': 'جارية',
-      'completed': 'مكتملة',
-      'cancelled': 'ملغية'
-    };
-    return statusMap[status] || status;
-  };
-
-  const getStatusStyle = (status: string) => {
-    const statusStyles: { [key: string]: any } = {
-      'requested': { color: '#FF9800' },
-      'accepted': { color: '#2196F3' },
-      'in_progress': { color: '#00C853' },
-      'completed': { color: '#4CAF50' },
-      'cancelled': { color: '#F44336' }
-    };
-    return statusStyles[status] || {};
-  };
-
   return (
     <View style={styles.dashboardContainer}>
       {/* Header */}
       <View style={styles.dashboardHeader}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.greeting}>مرحباً</Text>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>طلب رحلة</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={styles.ridesListButton}
-            onPress={() => setShowRidesList(!showRidesList)}
-          >
-            <Ionicons name="list" size={24} color="#00C853" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profileButton}>
-            <Ionicons name="person-circle" size={40} color="#00C853" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={32} color="#00C853" />
+        </TouchableOpacity>
       </View>
 
-      {/* Rides List Modal */}
-      <Modal
-        visible={showRidesList}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowRidesList(false)}>
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>رحلاتي</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          <FlatList
-            data={myRides}
-            renderItem={renderRideItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.ridesListContent}
-            showsVerticalScrollIndicator={false}
-          />
-        </SafeAreaView>
-      </Modal>
+      {/* Interactive Map */}
+      <View style={styles.mapContainer}>
+        <MapView
+          currentLocation={currentLocation}
+          markers={mapMarkers}
+          showUserLocation={true}
+          height={height * 0.4}
+        />
+      </View>
 
-      {!showRidesList && (
-        <>
-          {/* Interactive Map */}
-          <View style={styles.mapContainer}>
-            <MapView
-              currentLocation={currentLocation}
-              markers={mapMarkers}
-              showUserLocation={true}
-              height={height * 0.5}
-            />
-          </View>
-
-          {/* Ride Options */}
-          <View style={styles.rideOptionsContainer}>
-            <Text style={styles.sectionTitle}>إلى أين تريد الذهاب؟</Text>
-            
-            {/* Pickup Location */}
-            <TouchableOpacity 
-              style={styles.locationInput}
-              onPress={() => {
-                setModalType('pickup');
-                setLocationModalVisible(true);
-              }}
+      {/* Ride Options */}
+      <View style={styles.rideOptionsContainer}>
+        {/* Ride Type Selection */}
+        <View style={styles.rideTypeContainer}>
+          <View style={styles.rideTypeButtons}>
+            <TouchableOpacity
+              style={[styles.rideTypeButton, rideType === 'immediate' && styles.rideTypeButtonActive]}
+              onPress={() => setRideType('immediate')}
             >
-              <Ionicons name="radio-button-on" size={20} color="#2196F3" />
-              <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
-                {pickupLocation ? pickupLocation.address : 'نقطة الانطلاق'}
+              <Text style={[styles.rideTypeButtonText, rideType === 'immediate' && styles.rideTypeButtonTextActive]}>
+                فوري
               </Text>
             </TouchableOpacity>
-
-            {/* Destination Location */}
-            <TouchableOpacity 
-              style={styles.locationInput}
-              onPress={() => {
-                setModalType('destination');
-                setLocationModalVisible(true);
-              }}
+            <TouchableOpacity
+              style={[styles.rideTypeButton, rideType === 'scheduled' && styles.rideTypeButtonActive]}
+              onPress={() => setRideType('scheduled')}
             >
-              <Ionicons name="location" size={20} color="#FF4444" />
-              <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
-                {destinationLocation ? destinationLocation.address : 'اختر الوجهة'}
+              <Text style={[styles.rideTypeButtonText, rideType === 'scheduled' && styles.rideTypeButtonTextActive]}>
+                مجدول
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.rideTypeButton, rideType === 'open_ride' && styles.rideTypeButtonActive]}
+              onPress={() => setRideType('open_ride')}
+            >
+              <Text style={[styles.rideTypeButtonText, rideType === 'open_ride' && styles.rideTypeButtonTextActive]}>
+                مفتوح
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
-            <View style={styles.quickActions}>
-              <TouchableOpacity style={styles.quickActionButton}>
-                <Ionicons name="home" size={24} color="#00C853" />
-                <Text style={styles.quickActionText}>المنزل</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton}>
-                <Ionicons name="business" size={24} color="#00C853" />
-                <Text style={styles.quickActionText}>العمل</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton}>
-                <Ionicons name="time" size={24} color="#00C853" />
-                <Text style={styles.quickActionText}>آخر رحلة</Text>
-              </TouchableOpacity>
+        {/* Vehicle Type Selection */}
+        <View style={styles.vehicleTypeContainer}>
+          <TouchableOpacity
+            style={[styles.vehicleOption, vehicleType === 'standard' && styles.vehicleOptionActive]}
+            onPress={() => setVehicleType('standard')}
+          >
+            <Ionicons name="car" size={24} color={vehicleType === 'standard' ? '#00C853' : '#666'} />
+            <View style={styles.vehicleInfo}>
+              <Text style={[styles.vehicleTitle, vehicleType === 'standard' && styles.vehicleTextActive]}>
+                سيارة عادية
+              </Text>
+              <Text style={styles.vehicleDesc}>الخيار الاقتصادي</Text>
             </View>
+            <Text style={[styles.vehiclePrice, vehicleType === 'standard' && styles.vehicleTextActive]}>
+              من 1500 د.ع
+            </Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.primaryButton, rideRequested && styles.primaryButtonDisabled]}
-              onPress={handleRequestRide}
-              disabled={rideRequested}
-            >
-              <Text style={styles.primaryButtonText}>
-                {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
+          <TouchableOpacity
+            style={[styles.vehicleOption, vehicleType === 'vip' && styles.vehicleOptionActive]}
+            onPress={() => setVehicleType('vip')}
+          >
+            <Ionicons name="car-sport" size={24} color={vehicleType === 'vip' ? '#00C853' : '#666'} />
+            <View style={styles.vehicleInfo}>
+              <Text style={[styles.vehicleTitle, vehicleType === 'vip' && styles.vehicleTextActive]}>
+                سيارة VIP
               </Text>
-            </TouchableOpacity>
+              <Text style={styles.vehicleDesc}>راحة وخدمة مميزة</Text>
+            </View>
+            <Text style={[styles.vehiclePrice, vehicleType === 'vip' && styles.vehicleTextActive]}>
+              من 3000 د.ع
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Location Inputs */}
+        <TouchableOpacity 
+          style={styles.locationInput}
+          onPress={() => {
+            setModalType('pickup');
+            setLocationModalVisible(true);
+          }}
+        >
+          <Ionicons name="radio-button-on" size={20} color="#2196F3" />
+          <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
+            {pickupLocation ? pickupLocation.address : 'من'}
+          </Text>
+        </TouchableOpacity>
+
+        {rideType !== 'open_ride' && (
+          <TouchableOpacity 
+            style={styles.locationInput}
+            onPress={() => {
+              setModalType('destination');
+              setLocationModalVisible(true);
+            }}
+          >
+            <Ionicons name="location" size={20} color="#FF4444" />
+            <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
+              {destinationLocation ? destinationLocation.address : 'إلى'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {rideType === 'open_ride' && (
+          <View style={styles.openRideInfo}>
+            <MaterialIcons name="timer" size={20} color="#FF6B35" />
+            <Text style={styles.openRideText}>
+              رحلة مفتوحة - ادفع بناءً على الوقت المستغرق
+            </Text>
           </View>
-        </>
-      )}
+        )}
+
+        <TouchableOpacity 
+          style={[styles.primaryButton, rideRequested && styles.primaryButtonDisabled]}
+          onPress={handleRequestRide}
+          disabled={rideRequested}
+        >
+          <Text style={styles.primaryButtonText}>
+            {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Location Selection Modal */}
       <LocationSearchModal
@@ -745,49 +766,21 @@ const PassengerDashboard: React.FC = () => {
         title={modalType === 'pickup' ? 'اختر نقطة الانطلاق' : 'اختر الوجهة'}
         currentLocation={currentLocation}
       />
-
-      {/* Chat Modal */}
-      {selectedRideId && (
-        <ChatModal
-          visible={chatModalVisible}
-          onClose={() => setChatModalVisible(false)}
-          rideId={selectedRideId}
-          currentUser={user!}
-        />
-      )}
     </View>
   );
 };
 
-// Driver Dashboard with Interactive Map and Chat
-const DriverDashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-  const [isOnline, setIsOnline] = useState(false);
+// Delivery Dashboard
+const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+  const { user } = useAuth();
+  const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
+  const [myDeliveries, setMyDeliveries] = useState([]);
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
-  const [availableRides, setAvailableRides] = useState([]);
-  const [myRides, setMyRides] = useState([]);
-  const [chatModalVisible, setChatModalVisible] = useState(false);
-  const [selectedRideId, setSelectedRideId] = useState<string | null>(null);
-  const [showRidesList, setShowRidesList] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
-    loadMyRides();
-    if (isOnline) {
-      fetchAvailableRides();
-      const interval = setInterval(fetchAvailableRides, 10000); // Check every 10 seconds
-      return () => clearInterval(interval);
-    }
-  }, [isOnline]);
-
-  const loadMyRides = async () => {
-    try {
-      const rides = await apiCall('/rides/my-rides');
-      setMyRides(rides);
-    } catch (error) {
-      console.error('Error loading rides:', error);
-    }
-  };
+    loadMyDeliveries();
+  }, []);
 
   const getCurrentLocation = async () => {
     try {
@@ -808,12 +801,189 @@ const DriverDashboard: React.FC = () => {
     }
   };
 
-  const fetchAvailableRides = async () => {
+  const loadMyDeliveries = async () => {
     try {
-      const response = await apiCall('/rides/available');
-      setAvailableRides(response);
+      const deliveries = await apiCall('/delivery/my-deliveries');
+      setMyDeliveries(deliveries);
     } catch (error) {
-      console.error('Error fetching available rides:', error);
+      console.error('Error loading deliveries:', error);
+    }
+  };
+
+  const handleDeliveryRequested = (deliveryData: any) => {
+    loadMyDeliveries();
+  };
+
+  const getDeliveryStatusText = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'requested': 'في انتظار السائق',
+      'accepted': 'تم قبول الطلب',
+      'picked_up': 'تم استلام الطرد',
+      'in_transit': 'في الطريق',
+      'delivered': 'تم التسليم',
+      'cancelled': 'ملغي'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colorMap: { [key: string]: string } = {
+      'requested': '#FF9800',
+      'accepted': '#2196F3',
+      'picked_up': '#00C853',
+      'in_transit': '#00C853',
+      'delivered': '#4CAF50',
+      'cancelled': '#F44336'
+    };
+    return colorMap[status] || '#666666';
+  };
+
+  const renderDeliveryItem = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.deliveryItem}>
+      <View style={styles.deliveryHeader}>
+        <Text style={styles.deliveryDescription}>{item.package_info.description}</Text>
+        <Text style={[styles.deliveryStatus, { color: getStatusColor(item.status) }]}>
+          {getDeliveryStatusText(item.status)}
+        </Text>
+      </View>
+      
+      <View style={styles.deliveryDetails}>
+        <Text style={styles.deliveryLocation}>
+          من: {item.pickup_location.address}
+        </Text>
+        <Text style={styles.deliveryLocation}>
+          إلى: {item.delivery_location.address}
+        </Text>
+      </View>
+
+      <View style={styles.deliveryInfo}>
+        <Text style={styles.trackingCode}>
+          كود التتبع: {item.tracking_code}
+        </Text>
+        <Text style={styles.deliveryDate}>
+          {new Date(item.created_at).toLocaleDateString('ar-IQ')}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.dashboardContainer}>
+      {/* Header */}
+      <View style={styles.dashboardHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>خدمة التوصيل</Text>
+          <Text style={styles.userName}>{user?.name}</Text>
+        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={32} color="#00C853" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.deliveryContent} showsVerticalScrollIndicator={false}>
+        {/* Quick Actions */}
+        <View style={styles.quickActionsContainer}>
+          <TouchableOpacity 
+            style={styles.primaryActionButton}
+            onPress={() => setDeliveryModalVisible(true)}
+          >
+            <MaterialIcons name="add-box" size={24} color="#FFFFFF" />
+            <Text style={styles.primaryActionText}>طلب توصيل جديد</Text>
+          </TouchableOpacity>
+
+          <View style={styles.secondaryActions}>
+            <TouchableOpacity style={styles.secondaryActionButton}>
+              <MaterialIcons name="search" size={20} color="#00C853" />
+              <Text style={styles.secondaryActionText}>تتبع طرد</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.secondaryActionButton}>
+              <MaterialIcons name="history" size={20} color="#00C853" />
+              <Text style={styles.secondaryActionText}>السجل</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Recent Deliveries */}
+        <View style={styles.recentSection}>
+          <Text style={styles.sectionTitle}>طلبات التوصيل الأخيرة</Text>
+          {myDeliveries.length > 0 ? (
+            <FlatList
+              data={myDeliveries}
+              renderItem={renderDeliveryItem}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+            />
+          ) : (
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="local-shipping" size={48} color="#ccc" />
+              <Text style={styles.emptyText}>لا توجد طلبات توصيل بعد</Text>
+              <Text style={styles.emptySubtext}>اطلب أول توصيل لك الآن!</Text>
+            </View>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Delivery Request Modal */}
+      <DeliveryRequestModal
+        visible={deliveryModalVisible}
+        onClose={() => setDeliveryModalVisible(false)}
+        onDeliveryRequested={handleDeliveryRequested}
+        currentLocation={currentLocation}
+      />
+    </View>
+  );
+};
+
+// Driver Dashboard with both services
+const DriverDashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [isOnline, setIsOnline] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
+  const [availableRides, setAvailableRides] = useState([]);
+  const [availableDeliveries, setAvailableDeliveries] = useState([]);
+  const [activeTab, setActiveTab] = useState<'rides' | 'deliveries'>('rides');
+
+  useEffect(() => {
+    getCurrentLocation();
+    if (isOnline) {
+      fetchAvailableServices();
+      const interval = setInterval(fetchAvailableServices, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isOnline]);
+
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        setCurrentLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          address: 'موقعك الحالي'
+        });
+      }
+    } catch (error) {
+      console.error('Error getting current location:', error);
+    }
+  };
+
+  const fetchAvailableServices = async () => {
+    try {
+      const [ridesResponse, deliveriesResponse] = await Promise.all([
+        apiCall('/rides/available'),
+        apiCall('/delivery/available')
+      ]);
+      setAvailableRides(ridesResponse);
+      setAvailableDeliveries(deliveriesResponse);
+    } catch (error) {
+      console.error('Error fetching available services:', error);
     }
   };
 
@@ -831,106 +1001,42 @@ const DriverDashboard: React.FC = () => {
 
   const acceptRide = async (rideId: string) => {
     try {
-      await apiCall(`/rides/${rideId}/accept`, {
-        method: 'PUT',
-      });
-      Alert.alert('تم بنجاح', 'تم قبول الرحلة! يمكنك الآن التواصل مع الراكب');
-      fetchAvailableRides();
-      loadMyRides();
+      await apiCall(`/rides/${rideId}/accept`, { method: 'PUT' });
+      Alert.alert('تم بنجاح', 'تم قبول الرحلة!');
+      fetchAvailableServices();
     } catch (error: any) {
       Alert.alert('خطأ', error.message);
     }
   };
 
-  const openChat = (rideId: string) => {
-    setSelectedRideId(rideId);
-    setChatModalVisible(true);
+  const acceptDelivery = async (deliveryId: string) => {
+    try {
+      const response = await apiCall(`/delivery/${deliveryId}/accept`, { method: 'PUT' });
+      Alert.alert('تم بنجاح', `تم قبول طلب التوصيل!\nكود التتبع: ${response.tracking_code}`);
+      fetchAvailableServices();
+    } catch (error: any) {
+      Alert.alert('خطأ', error.message);
+    }
   };
 
-  const rideMarkers = availableRides.map((ride: any) => ({
-    id: ride.id,
-    latitude: ride.pickup_location.latitude,
-    longitude: ride.pickup_location.longitude,
-    title: 'طلب رحلة',
-    description: `إلى: ${ride.destination_location.address}`,
-    color: '#FF6B35',
-  }));
-
-  const renderAvailableRideItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.rideItem}>
-      <View style={styles.rideItemHeader}>
-        <Text style={styles.rideDestination}>
-          من: {item.pickup_location.address}
-        </Text>
-        <Text style={styles.estimatedFare}>
-          {item.estimated_fare} د.ع
-        </Text>
-      </View>
-      <Text style={styles.rideDestination}>
-        إلى: {item.destination_location.address}
-      </Text>
-      <Text style={styles.passengerName}>
-        الراكب: {item.passenger_info.name}
-      </Text>
-      <TouchableOpacity 
-        style={styles.acceptButton}
-        onPress={() => acceptRide(item.id)}
-      >
-        <Text style={styles.acceptButtonText}>قبول الرحلة</Text>
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-
-  const renderMyRideItem = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      style={styles.rideItem}
-      onPress={() => openChat(item.id)}
-    >
-      <View style={styles.rideItemHeader}>
-        <Text style={styles.rideDestination}>
-          إلى: {item.destination_location.address}
-        </Text>
-        <Text style={[styles.rideStatus, getStatusStyle(item.status)]}>
-          {getStatusText(item.status)}
-        </Text>
-      </View>
-      <Text style={styles.rideTime}>
-        {new Date(item.created_at).toLocaleDateString('ar-IQ')}
-      </Text>
-      <View style={styles.driverInfo}>
-        <Text style={styles.driverName}>الراكب: {item.passenger_info.name}</Text>
-        <TouchableOpacity 
-          style={styles.chatButton}
-          onPress={() => openChat(item.id)}
-        >
-          <Ionicons name="chatbubble" size={16} color="#00C853" />
-          <Text style={styles.chatButtonText}>محادثة</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
-
-  const getStatusText = (status: string) => {
-    const statusMap: { [key: string]: string } = {
-      'requested': 'في انتظار السائق',
-      'accepted': 'تم قبول الرحلة',
-      'in_progress': 'جارية',
-      'completed': 'مكتملة',
-      'cancelled': 'ملغية'
-    };
-    return statusMap[status] || status;
-  };
-
-  const getStatusStyle = (status: string) => {
-    const statusStyles: { [key: string]: any } = {
-      'requested': { color: '#FF9800' },
-      'accepted': { color: '#2196F3' },
-      'in_progress': { color: '#00C853' },
-      'completed': { color: '#4CAF50' },
-      'cancelled': { color: '#F44336' }
-    };
-    return statusStyles[status] || {};
-  };
+  const allMarkers = [
+    ...availableRides.map((ride: any) => ({
+      id: `ride-${ride.id}`,
+      latitude: ride.pickup_location.latitude,
+      longitude: ride.pickup_location.longitude,
+      title: 'طلب رحلة',
+      description: ride.destination_location ? `إلى: ${ride.destination_location.address}` : 'رحلة مفتوحة',
+      color: '#2196F3',
+    })),
+    ...availableDeliveries.map((delivery: any) => ({
+      id: `delivery-${delivery.id}`,
+      latitude: delivery.pickup_location.latitude,
+      longitude: delivery.pickup_location.longitude,
+      title: 'طلب توصيل',
+      description: `إلى: ${delivery.delivery_location.address}`,
+      color: '#FF6B35',
+    })),
+  ];
 
   return (
     <View style={styles.dashboardContainer}>
@@ -940,148 +1046,129 @@ const DriverDashboard: React.FC = () => {
           <Text style={styles.greeting}>مرحباً كابتن</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
-        <View style={styles.headerRight}>
-          <TouchableOpacity 
-            style={styles.ridesListButton}
-            onPress={() => setShowRidesList(!showRidesList)}
-          >
-            <Ionicons name="list" size={24} color="#00C853" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.profileButton}>
-            <Ionicons name="person-circle" size={40} color="#00C853" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={40} color="#00C853" />
+        </TouchableOpacity>
       </View>
 
-      {/* Rides Management Modal */}
-      <Modal
-        visible={showRidesList}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setShowRidesList(false)}>
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>إدارة الرحلات</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity style={styles.tab}>
-              <Text style={styles.tabText}>الرحلات المتاحة ({availableRides.length})</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <FlatList
-            data={availableRides}
-            renderItem={renderAvailableRideItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.ridesListContent}
-            showsVerticalScrollIndicator={false}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Ionicons name="car-outline" size={48} color="#ccc" />
-                <Text style={styles.emptyText}>لا توجد رحلات متاحة</Text>
-                <Text style={styles.emptySubtext}>
-                  {isOnline ? 'تحقق مرة أخرى بعد قليل' : 'اذهب متصل لرؤية الرحلات المتاحة'}
-                </Text>
+      {/* Interactive Map */}
+      <View style={styles.mapContainer}>
+        <MapView
+          currentLocation={currentLocation}
+          markers={allMarkers}
+          showUserLocation={true}
+          height={height * 0.35}
+        />
+      </View>
+
+      {/* Status Card */}
+      <View style={styles.statusCard}>
+        <View style={styles.statusHeader}>
+          <Text style={styles.statusTitle}>حالة العمل</Text>
+          <TouchableOpacity 
+            style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
+            onPress={toggleOnlineStatus}
+          >
+            <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
+              {isOnline ? 'متصل' : 'غير متصل'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.statusDescription}>
+          {isOnline ? `الرحلات: ${availableRides.length} | التوصيل: ${availableDeliveries.length}` : 'اضغط للاتصال واستقبال الطلبات'}
+        </Text>
+      </View>
+
+      {/* Service Tabs */}
+      <View style={styles.tabsContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'rides' && styles.tabActive]}
+          onPress={() => setActiveTab('rides')}
+        >
+          <Text style={[styles.tabText, activeTab === 'rides' && styles.tabTextActive]}>
+            الرحلات ({availableRides.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'deliveries' && styles.tabActive]}
+          onPress={() => setActiveTab('deliveries')}
+        >
+          <Text style={[styles.tabText, activeTab === 'deliveries' && styles.tabTextActive]}>
+            التوصيل ({availableDeliveries.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Content based on active tab */}
+      <ScrollView style={styles.servicesContent}>
+        {activeTab === 'rides' ? (
+          availableRides.map((ride: any) => (
+            <View key={ride.id} style={styles.serviceItem}>
+              <View style={styles.serviceHeader}>
+                <Text style={styles.serviceType}>رحلة {ride.ride_type === 'open_ride' ? 'مفتوحة' : 'عادية'}</Text>
+                <Text style={styles.vehicleBadge}>{ride.vehicle_type === 'vip' ? 'VIP' : 'عادية'}</Text>
               </View>
-            }
-          />
-        </SafeAreaView>
-      </Modal>
-
-      {!showRidesList && (
-        <>
-          {/* Interactive Map for Driver */}
-          <View style={styles.mapContainer}>
-            <MapView
-              currentLocation={currentLocation}
-              markers={rideMarkers}
-              showUserLocation={true}
-              height={height * 0.4}
-            />
-          </View>
-
-          {/* Status Card */}
-          <View style={styles.statusCard}>
-            <View style={styles.statusHeader}>
-              <Text style={styles.statusTitle}>حالة العمل</Text>
+              <Text style={styles.serviceLocation}>من: {ride.pickup_location.address}</Text>
+              {ride.destination_location && (
+                <Text style={styles.serviceLocation}>إلى: {ride.destination_location.address}</Text>
+              )}
+              <Text style={styles.passengerName}>الراكب: {ride.passenger_info.name}</Text>
               <TouchableOpacity 
-                style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
-                onPress={toggleOnlineStatus}
+                style={styles.acceptButton}
+                onPress={() => acceptRide(ride.id)}
               >
-                <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
-                  {isOnline ? 'متصل' : 'غير متصل'}
-                </Text>
+                <Text style={styles.acceptButtonText}>قبول الرحلة</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.statusDescription}>
-              {isOnline ? `الرحلات المتاحة: ${availableRides.length}` : 'اضغط للاتصال واستقبال الرحلات'}
+          ))
+        ) : (
+          availableDeliveries.map((delivery: any) => (
+            <View key={delivery.id} style={styles.serviceItem}>
+              <View style={styles.serviceHeader}>
+                <Text style={styles.serviceType}>توصيل {delivery.package_info.size}</Text>
+                <Text style={styles.trackingCode}>{delivery.tracking_code}</Text>
+              </View>
+              <Text style={styles.packageDesc}>{delivery.package_info.description}</Text>
+              <Text style={styles.serviceLocation}>من: {delivery.pickup_location.address}</Text>
+              <Text style={styles.serviceLocation}>إلى: {delivery.delivery_location.address}</Text>
+              <Text style={styles.recipientName}>المستلم: {delivery.recipient_info.name}</Text>
+              <TouchableOpacity 
+                style={styles.acceptButton}
+                onPress={() => acceptDelivery(delivery.id)}
+              >
+                <Text style={styles.acceptButtonText}>قبول التوصيل</Text>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+
+        {((activeTab === 'rides' && availableRides.length === 0) || 
+          (activeTab === 'deliveries' && availableDeliveries.length === 0)) && (
+          <View style={styles.emptyContainer}>
+            <MaterialIcons 
+              name={activeTab === 'rides' ? 'directions-car' : 'local-shipping'} 
+              size={48} 
+              color="#ccc" 
+            />
+            <Text style={styles.emptyText}>
+              لا توجد {activeTab === 'rides' ? 'رحلات' : 'طلبات توصيل'} متاحة
+            </Text>
+            <Text style={styles.emptySubtext}>
+              {isOnline ? 'تحقق مرة أخرى بعد قليل' : 'اذهب متصل لرؤية الطلبات المتاحة'}
             </Text>
           </View>
+        )}
+      </ScrollView>
 
-          {/* Statistics */}
-          <View style={styles.statsContainer}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{user?.total_rides || 0}</Text>
-              <Text style={styles.statLabel}>إجمالي الرحلات</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{user?.rating || 'جديد'}</Text>
-              <Text style={styles.statLabel}>التقييم</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{availableRides.length}</Text>
-              <Text style={styles.statLabel}>رحلات متاحة</Text>
-            </View>
-          </View>
-
-          {/* Quick Actions */}
-          <View style={styles.driverActions}>
-            <TouchableOpacity 
-              style={styles.actionCard}
-              onPress={() => setShowRidesList(true)}
-            >
-              <Ionicons name="list" size={24} color="#00C853" />
-              <Text style={styles.actionCardText}>رحلاتي</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionCard}>
-              <Ionicons name="cash" size={24} color="#00C853" />
-              <Text style={styles.actionCardText}>الأرباح</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionCard}>
-              <Ionicons name="car" size={24} color="#00C853" />
-              <Text style={styles.actionCardText}>معلومات السيارة</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
-
-      {/* Chat Modal */}
-      {selectedRideId && (
-        <ChatModal
-          visible={chatModalVisible}
-          onClose={() => setChatModalVisible(false)}
-          rideId={selectedRideId}
-          currentUser={user!}
-        />
-      )}
+      {/* Delivery Request Modal */}
+      <DeliveryRequestModal
+        visible={deliveryModalVisible}
+        onClose={() => setDeliveryModalVisible(false)}
+        onDeliveryRequested={handleDeliveryRequested}
+        currentLocation={currentLocation}
+      />
     </View>
   );
-};
-
-// Main Dashboard Component
-const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-
-  if (user?.user_type === 'passenger') {
-    return <PassengerDashboard />;
-  } else {
-    return <DriverDashboard />;
-  }
 };
 
 // Main App Component
@@ -1137,7 +1224,7 @@ const AppContent: React.FC<{
   return <RegisterScreen onSwitchToLogin={() => setAuthMode('login')} />;
 };
 
-// Styles (Enhanced for Maps)
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1167,13 +1254,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#F0F9F0',
-    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#B8860B',
+    marginBottom: 4,
+  },
+  logoSubtext: {
+    fontSize: 16,
+    color: '#666666',
+    fontStyle: 'italic',
   },
   appTitle: {
     fontSize: 28,
@@ -1224,6 +1317,54 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+
+  // Service Selection Styles
+  serviceContainer: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
+  serviceTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  serviceOptions: {
+    gap: 20,
+  },
+  serviceOption: {
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  serviceIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0F9F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  serviceOptionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  serviceOptionDesc: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
   },
 
   // Auth Screens Styles
@@ -1349,14 +1490,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E8E8E8',
   },
   headerLeft: {
     flex: 1,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
   },
   greeting: {
     fontSize: 16,
@@ -1371,12 +1521,7 @@ const styles = StyleSheet.create({
   profileButton: {
     padding: 8,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  ridesListButton: {
+  backButton: {
     padding: 8,
   },
 
@@ -1385,7 +1530,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
   },
 
-  // Ride Options
+  // Ride Options Styles
   rideOptionsContainer: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 24,
@@ -1398,6 +1543,73 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
+  },
+  rideTypeContainer: {
+    marginBottom: 20,
+  },
+  rideTypeButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  rideTypeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  rideTypeButtonActive: {
+    backgroundColor: '#00C853',
+    borderColor: '#00C853',
+  },
+  rideTypeButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666666',
+  },
+  rideTypeButtonTextActive: {
+    color: '#FFFFFF',
+  },
+  vehicleTypeContainer: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  vehicleOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E8E8E8',
+  },
+  vehicleOptionActive: {
+    borderColor: '#00C853',
+    backgroundColor: '#F0F9F0',
+  },
+  vehicleInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  vehicleTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  vehicleTextActive: {
+    color: '#00C853',
+  },
+  vehicleDesc: {
+    fontSize: 12,
+    color: '#666666',
+    marginTop: 2,
+  },
+  vehiclePrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666666',
   },
   locationInput: {
     flexDirection: 'row',
@@ -1420,44 +1632,195 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontWeight: '500',
   },
-  quickActions: {
+  openRideInfo: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 20,
-  },
-  quickActionButton: {
     alignItems: 'center',
     padding: 12,
+    backgroundColor: '#FFF8E1',
+    borderRadius: 8,
+    marginBottom: 20,
   },
-  quickActionText: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 4,
+  openRideText: {
+    fontSize: 14,
+    color: '#F57C00',
+    marginLeft: 8,
+    flex: 1,
   },
 
-  // Rides List Styles
-  modalContainer: {
+  // Delivery Dashboard Styles
+  deliveryContent: {
     flex: 1,
+  },
+  quickActionsContainer: {
+    padding: 20,
     backgroundColor: '#FFFFFF',
   },
-  modalHeader: {
+  primaryActionButton: {
+    backgroundColor: '#00C853',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: '#00C853',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  primaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  secondaryActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  secondaryActionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#F0F9F0',
+    borderWidth: 1,
+    borderColor: '#C8E6C9',
+  },
+  secondaryActionText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#00C853',
+    marginLeft: 6,
+  },
+  recentSection: {
+    backgroundColor: '#FFFFFF',
+    margin: 16,
+    borderRadius: 12,
+    padding: 16,
+    elevation: 2,
+  },
+  deliveryItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    elevation: 1,
+  },
+  deliveryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    marginBottom: 8,
   },
-  modalTitle: {
-    fontSize: 18,
+  deliveryDescription: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  deliveryStatus: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  deliveryDetails: {
+    marginBottom: 8,
+  },
+  deliveryLocation: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 4,
+  },
+  deliveryInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  trackingCode: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#00C853',
+  },
+  deliveryDate: {
+    fontSize: 12,
+    color: '#666666',
+  },
+
+  // Driver Dashboard Styles
+  statusCard: {
+    backgroundColor: '#FFFFFF',
+    margin: 20,
+    padding: 16,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statusTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#1A1A1A',
   },
-  ridesListContent: {
-    padding: 16,
+  statusToggle: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: '#E8E8E8',
   },
-  rideItem: {
+  statusToggleActive: {
+    backgroundColor: '#00C853',
+  },
+  statusToggleText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#666666',
+  },
+  statusToggleTextActive: {
+    color: '#FFFFFF',
+  },
+  statusDescription: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 20,
+    borderRadius: 8,
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+  },
+  tabActive: {
+    backgroundColor: '#00C853',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#666666',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+  servicesContent: {
+    flex: 1,
+    padding: 20,
+  },
+  serviceItem: {
     backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 16,
@@ -1465,64 +1828,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E8E8E8',
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
-  rideItemHeader: {
+  serviceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
-  rideDestination: {
+  serviceType: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#1A1A1A',
-    flex: 1,
-  },
-  rideStatus: {
-    fontSize: 14,
     fontWeight: 'bold',
+    color: '#1A1A1A',
   },
-  rideTime: {
+  vehicleBadge: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#00C853',
+    backgroundColor: '#F0F9F0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  serviceLocation: {
     fontSize: 14,
     color: '#666666',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  driverInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  driverName: {
+  packageDesc: {
     fontSize: 14,
-    color: '#333333',
-    flex: 1,
-  },
-  chatButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F9F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 4,
-  },
-  chatButtonText: {
-    fontSize: 12,
-    color: '#00C853',
-    fontWeight: 'bold',
-  },
-  estimatedFare: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#00C853',
+    color: '#666666',
+    marginBottom: 4,
   },
   passengerName: {
     fontSize: 14,
-    color: '#666666',
+    fontWeight: '500',
+    color: '#333333',
+    marginBottom: 12,
+  },
+  recipientName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333333',
     marginBottom: 12,
   },
   acceptButton: {
@@ -1535,23 +1881,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  tabsContainer: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-    backgroundColor: '#F8F8F8',
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 16,
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#00C853',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -1568,104 +1897,6 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: '#999',
-    textAlign: 'center',
-  },
-
-  // Driver Specific Styles
-  statusCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 24,
-    padding: 20,
-    borderRadius: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statusTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  statusToggle: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#E8E8E8',
-  },
-  statusToggleActive: {
-    backgroundColor: '#00C853',
-  },
-  statusToggleText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666666',
-  },
-  statusToggleTextActive: {
-    color: '#FFFFFF',
-  },
-  statusDescription: {
-    fontSize: 14,
-    color: '#666666',
-    lineHeight: 20,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#00C853',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  driverActions: {
-    flexDirection: 'row',
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    gap: 12,
-  },
-  actionCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  actionCardText: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 8,
     textAlign: 'center',
   },
 });
