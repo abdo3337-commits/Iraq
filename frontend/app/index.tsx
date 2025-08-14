@@ -521,21 +521,161 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
 
 // Enhanced Dashboard with Service Selection
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [selectedService, setSelectedService] = useState<'ride' | 'delivery' | null>(null);
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+
+  const handleUserUpdate = (updatedUser: any) => {
+    // Update user context if needed
+    console.log('User updated:', updatedUser);
+  };
+
+  const handleNotificationPress = (notification: any) => {
+    console.log('Notification pressed:', notification);
+    // Handle notification navigation
+  };
+
+  const handleNotificationAction = (action: string, notification: any) => {
+    console.log('Notification action:', action, notification);
+    // Handle notification actions
+  };
 
   if (!selectedService && user?.user_type === 'passenger') {
-    return <ServiceSelection onServiceSelect={setSelectedService} />;
+    return (
+      <>
+        <ServiceSelection onServiceSelect={setSelectedService} />
+        <NotificationSystem 
+          onNotificationPress={handleNotificationPress}
+          onActionPress={handleNotificationAction}
+        />
+        
+        {/* Modals */}
+        <ProfileScreen
+          visible={profileModalVisible}
+          onClose={() => setProfileModalVisible(false)}
+          user={user}
+          onUserUpdate={handleUserUpdate}
+        />
+        <HistoryScreen
+          visible={historyModalVisible}
+          onClose={() => setHistoryModalVisible(false)}
+          userType={user?.user_type}
+        />
+        <SettingsScreen
+          visible={settingsModalVisible}
+          onClose={() => setSettingsModalVisible(false)}
+          user={user}
+          onLogout={logout}
+        />
+      </>
+    );
   }
 
   if (user?.user_type === 'passenger') {
     if (selectedService === 'ride') {
-      return <PassengerDashboard onBack={() => setSelectedService(null)} />;
+      return (
+        <>
+          <PassengerDashboard 
+            onBack={() => setSelectedService(null)}
+            onProfilePress={() => setProfileModalVisible(true)}
+            onHistoryPress={() => setHistoryModalVisible(true)}
+            onSettingsPress={() => setSettingsModalVisible(true)}
+          />
+          <NotificationSystem 
+            onNotificationPress={handleNotificationPress}
+            onActionPress={handleNotificationAction}
+          />
+          
+          {/* Modals */}
+          <ProfileScreen
+            visible={profileModalVisible}
+            onClose={() => setProfileModalVisible(false)}
+            user={user}
+            onUserUpdate={handleUserUpdate}
+          />
+          <HistoryScreen
+            visible={historyModalVisible}
+            onClose={() => setHistoryModalVisible(false)}
+            userType={user?.user_type}
+          />
+          <SettingsScreen
+            visible={settingsModalVisible}
+            onClose={() => setSettingsModalVisible(false)}
+            user={user}
+            onLogout={logout}
+          />
+        </>
+      );
     } else {
-      return <DeliveryDashboard onBack={() => setSelectedService(null)} />;
+      return (
+        <>
+          <DeliveryDashboard 
+            onBack={() => setSelectedService(null)}
+            onProfilePress={() => setProfileModalVisible(true)}
+            onHistoryPress={() => setHistoryModalVisible(true)}
+            onSettingsPress={() => setSettingsModalVisible(true)}
+          />
+          <NotificationSystem 
+            onNotificationPress={handleNotificationPress}
+            onActionPress={handleNotificationAction}
+          />
+          
+          {/* Modals */}
+          <ProfileScreen
+            visible={profileModalVisible}
+            onClose={() => setProfileModalVisible(false)}
+            user={user}
+            onUserUpdate={handleUserUpdate}
+          />
+          <HistoryScreen
+            visible={historyModalVisible}
+            onClose={() => setHistoryModalVisible(false)}
+            userType={user?.user_type}
+          />
+          <SettingsScreen
+            visible={settingsModalVisible}
+            onClose={() => setSettingsModalVisible(false)}
+            user={user}
+            onLogout={logout}
+          />
+        </>
+      );
     }
   } else {
-    return <DriverDashboard />;
+    return (
+      <>
+        <DriverDashboard 
+          onProfilePress={() => setProfileModalVisible(true)}
+          onHistoryPress={() => setHistoryModalVisible(true)}
+          onSettingsPress={() => setSettingsModalVisible(true)}
+        />
+        <NotificationSystem 
+          onNotificationPress={handleNotificationPress}
+          onActionPress={handleNotificationAction}
+        />
+        
+        {/* Modals */}
+        <ProfileScreen
+          visible={profileModalVisible}
+          onClose={() => setProfileModalVisible(false)}
+          user={user}
+          onUserUpdate={handleUserUpdate}
+        />
+        <HistoryScreen
+          visible={historyModalVisible}
+          onClose={() => setHistoryModalVisible(false)}
+          userType={user?.user_type}
+        />
+        <SettingsScreen
+          visible={settingsModalVisible}
+          onClose={() => setSettingsModalVisible(false)}
+          user={user}
+          onLogout={logout}
+        />
+      </>
+    );
   }
 };
 
