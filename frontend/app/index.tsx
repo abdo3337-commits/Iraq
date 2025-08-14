@@ -1370,6 +1370,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
+  logoImage: {
+    width: 120,
+    height: 120,
+    marginBottom: Spacing.sm,
+  },
   logoText: {
     fontSize: FontSizes.xxxl,
     fontWeight: 'bold',
