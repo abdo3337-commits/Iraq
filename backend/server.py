@@ -461,7 +461,7 @@ async def calculate_delivery_cost(delivery_data: dict, distance_km: float = None
         total_cost += pricing.signature_fee
     
     # Add insurance if declared value exists
-    declared_value = package_info.get("declared_value", 0)
+    declared_value = package_info.get("declared_value", 0) or 0
     if declared_value > 0:
         total_cost += declared_value * pricing.insurance_rate
     
