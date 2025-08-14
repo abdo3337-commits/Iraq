@@ -759,21 +759,35 @@ const PassengerDashboard: React.FC = () => {
   );
 };
 
-// Driver Dashboard with Interactive Map
+// Driver Dashboard with Interactive Map and Chat
 const DriverDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [availableRides, setAvailableRides] = useState([]);
+  const [myRides, setMyRides] = useState([]);
+  const [chatModalVisible, setChatModalVisible] = useState(false);
+  const [selectedRideId, setSelectedRideId] = useState<string | null>(null);
+  const [showRidesList, setShowRidesList] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
+    loadMyRides();
     if (isOnline) {
       fetchAvailableRides();
       const interval = setInterval(fetchAvailableRides, 10000); // Check every 10 seconds
       return () => clearInterval(interval);
     }
   }, [isOnline]);
+
+  const loadMyRides = async () => {
+    try {
+      const rides = await apiCall('/rides/my-rides');
+      setMyRides(rides);
+    } catch (error) {
+      console.error('Error loading rides:', error);
+    }
+  };
 
   const getCurrentLocation = async () => {
     try {
@@ -815,6 +829,24 @@ const DriverDashboard: React.FC = () => {
     }
   };
 
+  const acceptRide = async (rideId: string) => {
+    try {
+      await apiCall(`/rides/${rideId}/accept`, {
+        method: 'PUT',
+      });
+      Alert.alert('تم بنجاح', 'تم قبول الرحلة! يمكنك الآن التواصل مع الراكب');
+      fetchAvailableRides();
+      loadMyRides();
+    } catch (error: any) {
+      Alert.alert('خطأ', error.message);
+    }
+  };
+
+  const openChat = (rideId: string) => {
+    setSelectedRideId(rideId);
+    setChatModalVisible(true);
+  };
+
   const rideMarkers = availableRides.map((ride: any) => ({
     id: ride.id,
     latitude: ride.pickup_location.latitude,
@@ -824,6 +856,82 @@ const DriverDashboard: React.FC = () => {
     color: '#FF6B35',
   }));
 
+  const renderAvailableRideItem = ({ item }: { item: any }) => (
+    <TouchableOpacity style={styles.rideItem}>
+      <View style={styles.rideItemHeader}>
+        <Text style={styles.rideDestination}>
+          من: {item.pickup_location.address}
+        </Text>
+        <Text style={styles.estimatedFare}>
+          {item.estimated_fare} د.ع
+        </Text>
+      </View>
+      <Text style={styles.rideDestination}>
+        إلى: {item.destination_location.address}
+      </Text>
+      <Text style={styles.passengerName}>
+        الراكب: {item.passenger_info.name}
+      </Text>
+      <TouchableOpacity 
+        style={styles.acceptButton}
+        onPress={() => acceptRide(item.id)}
+      >
+        <Text style={styles.acceptButtonText}>قبول الرحلة</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const renderMyRideItem = ({ item }: { item: any }) => (
+    <TouchableOpacity 
+      style={styles.rideItem}
+      onPress={() => openChat(item.id)}
+    >
+      <View style={styles.rideItemHeader}>
+        <Text style={styles.rideDestination}>
+          إلى: {item.destination_location.address}
+        </Text>
+        <Text style={[styles.rideStatus, getStatusStyle(item.status)]}>
+          {getStatusText(item.status)}
+        </Text>
+      </View>
+      <Text style={styles.rideTime}>
+        {new Date(item.created_at).toLocaleDateString('ar-IQ')}
+      </Text>
+      <View style={styles.driverInfo}>
+        <Text style={styles.driverName}>الراكب: {item.passenger_info.name}</Text>
+        <TouchableOpacity 
+          style={styles.chatButton}
+          onPress={() => openChat(item.id)}
+        >
+          <Ionicons name="chatbubble" size={16} color="#00C853" />
+          <Text style={styles.chatButtonText}>محادثة</Text>
+        </TouchableOpacity>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const getStatusText = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'requested': 'في انتظار السائق',
+      'accepted': 'تم قبول الرحلة',
+      'in_progress': 'جارية',
+      'completed': 'مكتملة',
+      'cancelled': 'ملغية'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusStyle = (status: string) => {
+    const statusStyles: { [key: string]: any } = {
+      'requested': { color: '#FF9800' },
+      'accepted': { color: '#2196F3' },
+      'in_progress': { color: '#00C853' },
+      'completed': { color: '#4CAF50' },
+      'cancelled': { color: '#F44336' }
+    };
+    return statusStyles[status] || {};
+  };
+
   return (
     <View style={styles.dashboardContainer}>
       {/* Header */}
@@ -832,70 +940,135 @@ const DriverDashboard: React.FC = () => {
           <Text style={styles.greeting}>مرحباً كابتن</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={40} color="#00C853" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Interactive Map for Driver */}
-      <View style={styles.mapContainer}>
-        <MapView
-          currentLocation={currentLocation}
-          markers={rideMarkers}
-          showUserLocation={true}
-          height={height * 0.4}
-        />
-      </View>
-
-      {/* Status Card */}
-      <View style={styles.statusCard}>
-        <View style={styles.statusHeader}>
-          <Text style={styles.statusTitle}>حالة العمل</Text>
+        <View style={styles.headerRight}>
           <TouchableOpacity 
-            style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
-            onPress={toggleOnlineStatus}
+            style={styles.ridesListButton}
+            onPress={() => setShowRidesList(!showRidesList)}
           >
-            <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
-              {isOnline ? 'متصل' : 'غير متصل'}
-            </Text>
+            <Ionicons name="list" size={24} color="#00C853" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButton}>
+            <Ionicons name="person-circle" size={40} color="#00C853" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.statusDescription}>
-          {isOnline ? `الرحلات المتاحة: ${availableRides.length}` : 'اضغط للاتصال واستقبال الرحلات'}
-        </Text>
       </View>
 
-      {/* Statistics */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{user?.total_rides || 0}</Text>
-          <Text style={styles.statLabel}>إجمالي الرحلات</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{user?.rating || 'جديد'}</Text>
-          <Text style={styles.statLabel}>التقييم</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{availableRides.length}</Text>
-          <Text style={styles.statLabel}>رحلات متاحة</Text>
-        </View>
-      </View>
+      {/* Rides Management Modal */}
+      <Modal
+        visible={showRidesList}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowRidesList(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>إدارة الرحلات</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <View style={styles.tabsContainer}>
+            <TouchableOpacity style={styles.tab}>
+              <Text style={styles.tabText}>الرحلات المتاحة ({availableRides.length})</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <FlatList
+            data={availableRides}
+            renderItem={renderAvailableRideItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.ridesListContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Ionicons name="car-outline" size={48} color="#ccc" />
+                <Text style={styles.emptyText}>لا توجد رحلات متاحة</Text>
+                <Text style={styles.emptySubtext}>
+                  {isOnline ? 'تحقق مرة أخرى بعد قليل' : 'اذهب متصل لرؤية الرحلات المتاحة'}
+                </Text>
+              </View>
+            }
+          />
+        </SafeAreaView>
+      </Modal>
 
-      {/* Quick Actions */}
-      <View style={styles.driverActions}>
-        <TouchableOpacity style={styles.actionCard}>
-          <Ionicons name="list" size={24} color="#00C853" />
-          <Text style={styles.actionCardText}>رحلاتي</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
-          <Ionicons name="cash" size={24} color="#00C853" />
-          <Text style={styles.actionCardText}>الأرباح</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionCard}>
-          <Ionicons name="car" size={24} color="#00C853" />
-          <Text style={styles.actionCardText}>معلومات السيارة</Text>
-        </TouchableOpacity>
-      </View>
+      {!showRidesList && (
+        <>
+          {/* Interactive Map for Driver */}
+          <View style={styles.mapContainer}>
+            <MapView
+              currentLocation={currentLocation}
+              markers={rideMarkers}
+              showUserLocation={true}
+              height={height * 0.4}
+            />
+          </View>
+
+          {/* Status Card */}
+          <View style={styles.statusCard}>
+            <View style={styles.statusHeader}>
+              <Text style={styles.statusTitle}>حالة العمل</Text>
+              <TouchableOpacity 
+                style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
+                onPress={toggleOnlineStatus}
+              >
+                <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
+                  {isOnline ? 'متصل' : 'غير متصل'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.statusDescription}>
+              {isOnline ? `الرحلات المتاحة: ${availableRides.length}` : 'اضغط للاتصال واستقبال الرحلات'}
+            </Text>
+          </View>
+
+          {/* Statistics */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{user?.total_rides || 0}</Text>
+              <Text style={styles.statLabel}>إجمالي الرحلات</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{user?.rating || 'جديد'}</Text>
+              <Text style={styles.statLabel}>التقييم</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{availableRides.length}</Text>
+              <Text style={styles.statLabel}>رحلات متاحة</Text>
+            </View>
+          </View>
+
+          {/* Quick Actions */}
+          <View style={styles.driverActions}>
+            <TouchableOpacity 
+              style={styles.actionCard}
+              onPress={() => setShowRidesList(true)}
+            >
+              <Ionicons name="list" size={24} color="#00C853" />
+              <Text style={styles.actionCardText}>رحلاتي</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionCard}>
+              <Ionicons name="cash" size={24} color="#00C853" />
+              <Text style={styles.actionCardText}>الأرباح</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionCard}>
+              <Ionicons name="car" size={24} color="#00C853" />
+              <Text style={styles.actionCardText}>معلومات السيارة</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
+      {/* Chat Modal */}
+      {selectedRideId && (
+        <ChatModal
+          visible={chatModalVisible}
+          onClose={() => setChatModalVisible(false)}
+          rideId={selectedRideId}
+          currentUser={user!}
+        />
+      )}
     </View>
   );
 };
