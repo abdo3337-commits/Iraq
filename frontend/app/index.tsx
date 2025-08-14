@@ -26,6 +26,10 @@ import LocationSearchModal from '../components/LocationSearchModal';
 import ChatModal from '../components/ChatModal';
 import DeliveryRequestModal from '../components/DeliveryRequestModal';
 import PaymentSelectionModal from '../components/PaymentSelectionModal';
+import ProfileScreen from '../components/ProfileScreen';
+import HistoryScreen from '../components/HistoryScreen';
+import SettingsScreen from '../components/SettingsScreen';
+import NotificationSystem from '../components/NotificationSystem';
 import { Colors, Spacing, BorderRadius, FontSizes, Shadows } from '../components/styles';
 
 const { width, height } = Dimensions.get('window');
