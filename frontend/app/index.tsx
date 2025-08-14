@@ -12,6 +12,7 @@ import {
   Platform,
   Dimensions,
   Modal,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -21,6 +22,7 @@ import * as Location from 'expo-location';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import MapView from '../components/MapView';
 import LocationSearchModal from '../components/LocationSearchModal';
+import ChatModal from '../components/ChatModal';
 
 const { width, height } = Dimensions.get('window');
 
