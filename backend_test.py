@@ -186,7 +186,7 @@ class OrangeBusAPITester:
         
         # Test invalid login
         invalid_login = {
-            "phone": "+964770123456",
+            "phone": self.passenger_phone,
             "password": "WrongPassword"
         }
         
