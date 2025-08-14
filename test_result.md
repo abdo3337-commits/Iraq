@@ -101,3 +101,121 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Build Orange Bus (الباص البرتقالي) ride-sharing app for Anbar Governorate in Iraq with passenger and driver interfaces, real-time tracking, chat system, and ratings"
+
+backend:
+  - task: "User Management System"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Starting to implement user registration, login, and profile management for both passengers and drivers"
+
+  - task: "Ride Management System"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Need to implement ride creation, matching, and status management"
+
+  - task: "Real-time Communication API"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "WebSocket implementation for real-time tracking and chat"
+
+  - task: "Rating System API"
+    implemented: false
+    working: "NA"
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Rating and review system for passengers and drivers"
+
+frontend:
+  - task: "Authentication Screens"
+    implemented: false
+    working: "NA"
+    file: "app/index.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Login, registration, and onboarding screens for both user types"
+
+  - task: "Passenger Interface"
+    implemented: false
+    working: "NA"
+    file: "app/passenger/"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Main passenger screens: book ride, track ride, chat with driver"
+
+  - task: "Driver Interface"
+    implemented: false
+    working: "NA"
+    file: "app/driver/"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Driver dashboard, accept/reject rides, navigate to passenger"
+
+  - task: "Map Integration"
+    implemented: false
+    working: "NA"
+    file: "components/MapView.tsx"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "OpenStreetMap integration for location services and tracking"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "User Management System"
+    - "Authentication Screens"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "main"
+      message: "Starting Orange Bus app development with backend user management and frontend authentication as first priorities"
