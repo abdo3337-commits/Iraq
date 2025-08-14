@@ -31,7 +31,7 @@ interface DeliveryRequestModalProps {
   currentLocation?: LocationData | null;
 }
 
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://rideshare-iraq.preview.emergentagent.com';
+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://smart-taxi-2.preview.emergentagent.com';
 
 const DeliveryRequestModal: React.FC<DeliveryRequestModalProps> = ({
   visible,

@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 
 # Configuration
-BASE_URL = "https://rideshare-iraq.preview.emergentagent.com/api"
+BASE_URL = "https://smart-taxi-2.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 class OrangeBusAPITester:

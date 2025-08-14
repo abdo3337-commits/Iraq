@@ -45,7 +45,7 @@ interface ChatModalProps {
   currentUser: User;
 }
 
-const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://rideshare-iraq.preview.emergentagent.com';
+const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://smart-taxi-2.preview.emergentagent.com';
 
 const ChatModal: React.FC<ChatModalProps> = ({
   visible,
