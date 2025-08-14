@@ -680,7 +680,12 @@ const Dashboard: React.FC = () => {
 };
 
 // Passenger Dashboard for Rides with Payment Integration
-const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const PassengerDashboard: React.FC<{ 
+  onBack: () => void;
+  onProfilePress?: () => void;
+  onHistoryPress?: () => void;
+  onSettingsPress?: () => void;
+}> = ({ onBack, onProfilePress, onHistoryPress, onSettingsPress }) => {
   const { user } = useAuth();
   const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
   const [destinationLocation, setDestinationLocation] = useState<LocationData | null>(null);
