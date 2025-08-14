@@ -19,6 +19,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import MapView from '../components/MapView';
+import LocationSearchModal from '../components/LocationSearchModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -456,10 +458,90 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
   );
 };
 
-// Passenger Dashboard (Careem/Uber Style)
+// Passenger Dashboard with Interactive Map
 const PassengerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
+  const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
+  const [destinationLocation, setDestinationLocation] = useState<LocationData | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
   const [locationModalVisible, setLocationModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<'pickup' | 'destination'>('pickup');
+  const [rideRequested, setRideRequested] = useState(false);
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
+
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        const newLocation = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          address: 'موقعك الحالي'
+        };
+
+        setCurrentLocation(newLocation);
+        setPickupLocation(newLocation);
+      }
+    } catch (error) {
+      console.error('Error getting current location:', error);
+    }
+  };
+
+  const handleLocationSelect = (location: LocationData) => {
+    if (modalType === 'pickup') {
+      setPickupLocation(location);
+    } else {
+      setDestinationLocation(location);
+    }
+  };
+
+  const handleRequestRide = async () => {
+    if (!pickupLocation || !destinationLocation) {
+      Alert.alert('تنبيه', 'يرجى تحديد نقطة الانطلاق والوجهة');
+      return;
+    }
+
+    try {
+      const response = await apiCall('/rides/request', {
+        method: 'POST',
+        body: JSON.stringify({
+          pickup_location: pickupLocation,
+          destination_location: destinationLocation,
+        }),
+      });
+
+      setRideRequested(true);
+      Alert.alert('تم بنجاح', 'تم طلب الرحلة بنجاح! سيتم إشعارك عند قبول السائق للرحلة');
+    } catch (error: any) {
+      Alert.alert('خطأ', error.message);
+    }
+  };
+
+  const mapMarkers = [
+    ...(pickupLocation ? [{
+      id: 'pickup',
+      latitude: pickupLocation.latitude,
+      longitude: pickupLocation.longitude,
+      title: 'نقطة الانطلاق',
+      description: pickupLocation.address,
+      color: '#2196F3',
+    }] : []),
+    ...(destinationLocation ? [{
+      id: 'destination',
+      latitude: destinationLocation.latitude,
+      longitude: destinationLocation.longitude,
+      title: 'الوجهة',
+      description: destinationLocation.address,
+      color: '#FF4444',
+    }] : []),
+  ];
 
   return (
     <View style={styles.dashboardContainer}>
@@ -474,25 +556,46 @@ const PassengerDashboard: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Map Placeholder */}
+      {/* Interactive Map */}
       <View style={styles.mapContainer}>
-        <View style={styles.mapPlaceholder}>
-          <Ionicons name="map" size={80} color="#E0E0E0" />
-          <Text style={styles.mapPlaceholderText}>الخريطة ستظهر هنا</Text>
-        </View>
+        <MapView
+          currentLocation={currentLocation}
+          markers={mapMarkers}
+          showUserLocation={true}
+          height={height * 0.5}
+        />
       </View>
 
       {/* Ride Options */}
       <View style={styles.rideOptionsContainer}>
         <Text style={styles.sectionTitle}>إلى أين تريد الذهاب؟</Text>
         
+        {/* Pickup Location */}
         <TouchableOpacity 
           style={styles.locationInput}
-          onPress={() => setLocationModalVisible(true)}
+          onPress={() => {
+            setModalType('pickup');
+            setLocationModalVisible(true);
+          }}
         >
-          <Ionicons name="location" size={20} color="#00C853" />
-          <Text style={styles.locationInputText}>اختر الوجهة</Text>
-          <Ionicons name="chevron-forward" size={20} color="#666" />
+          <Ionicons name="radio-button-on" size={20} color="#2196F3" />
+          <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
+            {pickupLocation ? pickupLocation.address : 'نقطة الانطلاق'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Destination Location */}
+        <TouchableOpacity 
+          style={styles.locationInput}
+          onPress={() => {
+            setModalType('destination');
+            setLocationModalVisible(true);
+          }}
+        >
+          <Ionicons name="location" size={20} color="#FF4444" />
+          <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
+            {destinationLocation ? destinationLocation.address : 'اختر الوجهة'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.quickActions}>
@@ -510,38 +613,93 @@ const PassengerDashboard: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>طلب رحلة</Text>
+        <TouchableOpacity 
+          style={[styles.primaryButton, rideRequested && styles.primaryButtonDisabled]}
+          onPress={handleRequestRide}
+          disabled={rideRequested}
+        >
+          <Text style={styles.primaryButtonText}>
+            {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Location Selection Modal */}
-      <Modal
+      <LocationSearchModal
         visible={locationModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>اختر الوجهة</Text>
-            <View style={{ width: 24 }} />
-          </View>
-          <View style={styles.modalContent}>
-            <Text style={styles.comingSoonText}>قريباً: خريطة تفاعلية واختيار الموقع</Text>
-          </View>
-        </SafeAreaView>
-      </Modal>
+        onClose={() => setLocationModalVisible(false)}
+        onLocationSelect={handleLocationSelect}
+        title={modalType === 'pickup' ? 'اختر نقطة الانطلاق' : 'اختر الوجهة'}
+        currentLocation={currentLocation}
+      />
     </View>
   );
 };
 
-// Driver Dashboard (Careem/Uber Style)
+// Driver Dashboard with Interactive Map
 const DriverDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
+  const [availableRides, setAvailableRides] = useState([]);
+
+  useEffect(() => {
+    getCurrentLocation();
+    if (isOnline) {
+      fetchAvailableRides();
+      const interval = setInterval(fetchAvailableRides, 10000); // Check every 10 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isOnline]);
+
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        setCurrentLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          address: 'موقعك الحالي'
+        });
+      }
+    } catch (error) {
+      console.error('Error getting current location:', error);
+    }
+  };
+
+  const fetchAvailableRides = async () => {
+    try {
+      const response = await apiCall('/rides/available');
+      setAvailableRides(response);
+    } catch (error) {
+      console.error('Error fetching available rides:', error);
+    }
+  };
+
+  const toggleOnlineStatus = async () => {
+    try {
+      await apiCall('/drivers/availability', {
+        method: 'PUT',
+        body: JSON.stringify({ is_available: !isOnline }),
+      });
+      setIsOnline(!isOnline);
+    } catch (error: any) {
+      Alert.alert('خطأ', error.message);
+    }
+  };
+
+  const rideMarkers = availableRides.map((ride: any) => ({
+    id: ride.id,
+    latitude: ride.pickup_location.latitude,
+    longitude: ride.pickup_location.longitude,
+    title: 'طلب رحلة',
+    description: `إلى: ${ride.destination_location.address}`,
+    color: '#FF6B35',
+  }));
 
   return (
     <View style={styles.dashboardContainer}>
@@ -556,13 +714,23 @@ const DriverDashboard: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Interactive Map for Driver */}
+      <View style={styles.mapContainer}>
+        <MapView
+          currentLocation={currentLocation}
+          markers={rideMarkers}
+          showUserLocation={true}
+          height={height * 0.4}
+        />
+      </View>
+
       {/* Status Card */}
       <View style={styles.statusCard}>
         <View style={styles.statusHeader}>
           <Text style={styles.statusTitle}>حالة العمل</Text>
           <TouchableOpacity 
             style={[styles.statusToggle, isOnline && styles.statusToggleActive]}
-            onPress={() => setIsOnline(!isOnline)}
+            onPress={toggleOnlineStatus}
           >
             <Text style={[styles.statusToggleText, isOnline && styles.statusToggleTextActive]}>
               {isOnline ? 'متصل' : 'غير متصل'}
@@ -570,23 +738,23 @@ const DriverDashboard: React.FC = () => {
           </TouchableOpacity>
         </View>
         <Text style={styles.statusDescription}>
-          {isOnline ? 'يمكنك الآن استقبال طلبات الرحلات' : 'اضغط للاتصال واستقبال الرحلات'}
+          {isOnline ? `الرحلات المتاحة: ${availableRides.length}` : 'اضغط للاتصال واستقبال الرحلات'}
         </Text>
       </View>
 
       {/* Statistics */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>12</Text>
-          <Text style={styles.statLabel}>رحلات اليوم</Text>
+          <Text style={styles.statNumber}>{user?.total_rides || 0}</Text>
+          <Text style={styles.statLabel}>إجمالي الرحلات</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>4.8</Text>
+          <Text style={styles.statNumber}>{user?.rating || 'جديد'}</Text>
           <Text style={styles.statLabel}>التقييم</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>85,000</Text>
-          <Text style={styles.statLabel}>الأرباح (د.ع)</Text>
+          <Text style={styles.statNumber}>{availableRides.length}</Text>
+          <Text style={styles.statLabel}>رحلات متاحة</Text>
         </View>
       </View>
 
@@ -673,7 +841,7 @@ const AppContent: React.FC<{
   return <RegisterScreen onSwitchToLogin={() => setAuthMode('login')} />;
 };
 
-// Styles (Careem/Uber Style)
+// Styles (Enhanced for Maps)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -910,18 +1078,7 @@ const styles = StyleSheet.create({
 
   // Map Container
   mapContainer: {
-    flex: 1,
     backgroundColor: '#E8E8E8',
-  },
-  mapPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mapPlaceholderText: {
-    fontSize: 16,
-    color: '#999999',
-    marginTop: 16,
   },
 
   // Ride Options
@@ -945,7 +1102,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    marginBottom: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
   },
   locationInputText: {
     flex: 1,
@@ -953,10 +1112,14 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginLeft: 12,
   },
+  locationInputTextSelected: {
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
   quickActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 20,
+    marginVertical: 20,
   },
   quickActionButton: {
     alignItems: 'center',
@@ -1064,38 +1227,6 @@ const styles = StyleSheet.create({
     color: '#666666',
     marginTop: 8,
     textAlign: 'center',
-  },
-
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  comingSoonText: {
-    fontSize: 16,
-    color: '#666666',
-    textAlign: 'center',
-    lineHeight: 24,
   },
 });
 
