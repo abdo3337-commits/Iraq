@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -75,10 +75,20 @@ class UserType(str):
 
 class RideStatus:
     REQUESTED = "requested"
+    SCHEDULED = "scheduled"  # New status for pre-booked rides
     ACCEPTED = "accepted"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+class RideType:
+    IMMEDIATE = "immediate"
+    SCHEDULED = "scheduled"  # Pre-booked rides
+    OPEN_RIDE = "open_ride"  # Time-based rides
+
+class VehicleType:
+    STANDARD = "standard"
+    VIP = "vip"
 
 class MessageType:
     TEXT = "text"
@@ -112,14 +122,17 @@ class Token(BaseModel):
     token_type: str
     user: UserResponse
 
-# Driver specific models
+# Enhanced Driver specific models
 class DriverInfo(BaseModel):
     license_number: str
     car_model: str
     car_color: str
     car_plate: str
     car_image: Optional[str] = None  # base64 encoded
+    vehicle_type: Literal["standard", "vip"] = "standard"  # New field
     is_available: bool = True
+    max_passengers: int = 4
+    amenities: List[str] = []  # For VIP cars: ["AC", "WiFi", "Water", "Phone_Charger"]
 
 class DriverResponse(UserResponse):
     driver_info: Optional[DriverInfo] = None
@@ -130,26 +143,37 @@ class Location(BaseModel):
     longitude: float
     address: Optional[str] = None
 
-# Ride Models
+# Enhanced Ride Models
 class RideRequest(BaseModel):
     pickup_location: Location
-    destination_location: Location
+    destination_location: Optional[Location] = None  # Optional for open rides
     passenger_notes: Optional[str] = None
+    ride_type: Literal["immediate", "scheduled", "open_ride"] = "immediate"
+    vehicle_type: Literal["standard", "vip"] = "standard"
+    scheduled_time: Optional[datetime] = None  # For pre-booked rides
+    max_duration_minutes: Optional[int] = None  # For open rides (default 480 = 8 hours)
 
 class RideResponse(BaseModel):
     id: str
     passenger_id: str
     driver_id: Optional[str] = None
     pickup_location: Location
-    destination_location: Location
+    destination_location: Optional[Location] = None
     status: str
+    ride_type: str
+    vehicle_type: str
     created_at: datetime
+    scheduled_time: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = None
     estimated_fare: Optional[float] = None
     actual_fare: Optional[float] = None
     passenger_notes: Optional[str] = None
     driver_notes: Optional[str] = None
     passenger_info: Optional[UserResponse] = None
     driver_info: Optional[DriverResponse] = None
+    duration_minutes: Optional[int] = None  # Actual duration for completed rides
+    distance_km: Optional[float] = None
 
 # Rating Models
 class RatingCreate(BaseModel):
@@ -190,6 +214,15 @@ class ChatResponse(BaseModel):
     participants: List[UserResponse]
     messages: List[MessageResponse]
     unread_count: int = 0
+
+# Pricing Models
+class VehiclePricing(BaseModel):
+    vehicle_type: str
+    base_fare: float
+    rate_per_km: float
+    rate_per_minute: float
+    minimum_fare: float
+    booking_fee: float = 0  # Additional fee for scheduled rides
 
 # =====================================================
 # UTILITY FUNCTIONS
@@ -233,6 +266,53 @@ def serialize_message(message: dict) -> dict:
     del message["_id"]
     return message
 
+async def get_vehicle_pricing(vehicle_type: str) -> VehiclePricing:
+    """Get pricing for different vehicle types"""
+    pricing_config = {
+        "standard": VehiclePricing(
+            vehicle_type="standard",
+            base_fare=1000.0,  # 1000 IQD base fare
+            rate_per_km=500.0,  # 500 IQD per km
+            rate_per_minute=50.0,  # 50 IQD per minute
+            minimum_fare=1500.0,  # Minimum 1500 IQD
+            booking_fee=500.0  # 500 IQD for scheduled rides
+        ),
+        "vip": VehiclePricing(
+            vehicle_type="vip",
+            base_fare=2000.0,  # 2000 IQD base fare
+            rate_per_km=800.0,  # 800 IQD per km
+            rate_per_minute=80.0,  # 80 IQD per minute
+            minimum_fare=3000.0,  # Minimum 3000 IQD
+            booking_fee=1000.0  # 1000 IQD for scheduled rides
+        )
+    }
+    return pricing_config.get(vehicle_type, pricing_config["standard"])
+
+async def calculate_ride_fare(ride_data: dict, duration_minutes: int = None, distance_km: float = None) -> float:
+    """Calculate fare based on ride type and vehicle type"""
+    pricing = await get_vehicle_pricing(ride_data.get("vehicle_type", "standard"))
+    
+    if ride_data["ride_type"] == "open_ride":
+        # For open rides, calculate based on time only
+        if duration_minutes:
+            return max(pricing.minimum_fare, pricing.base_fare + (duration_minutes * pricing.rate_per_minute))
+        return pricing.minimum_fare
+    else:
+        # For regular rides, calculate based on distance and time
+        total_fare = pricing.base_fare
+        
+        if distance_km:
+            total_fare += distance_km * pricing.rate_per_km
+        
+        if duration_minutes:
+            total_fare += duration_minutes * pricing.rate_per_minute
+        
+        # Add booking fee for scheduled rides
+        if ride_data["ride_type"] == "scheduled":
+            total_fare += pricing.booking_fee
+        
+        return max(pricing.minimum_fare, total_fare)
+
 # =====================================================
 # WEBSOCKET ENDPOINT
 # =====================================================
@@ -242,9 +322,7 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket, user_id)
     try:
         while True:
-            # Keep connection alive
             data = await websocket.receive_text()
-            # Echo back to confirm connection
             await websocket.send_text(f"Connected: {user_id}")
     except WebSocketDisconnect:
         manager.disconnect(user_id)
@@ -255,15 +333,12 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
 
 @api_router.post("/auth/register", response_model=Token)
 async def register_user(user_data: UserCreate):
-    # Check if user already exists
     existing_user = await db.users.find_one({"phone": user_data.phone})
     if existing_user:
         raise HTTPException(status_code=400, detail="Phone number already registered")
     
-    # Hash password
     hashed_password = hash_password(user_data.password)
     
-    # Prepare user document
     user_doc = {
         "name": user_data.name,
         "phone": user_data.phone,
@@ -277,7 +352,6 @@ async def register_user(user_data: UserCreate):
         "is_active": True
     }
     
-    # Add driver specific fields if user is driver
     if user_data.user_type == "driver":
         user_doc["driver_info"] = {
             "license_number": "",
@@ -285,18 +359,18 @@ async def register_user(user_data: UserCreate):
             "car_color": "",
             "car_plate": "",
             "car_image": None,
-            "is_available": False
+            "vehicle_type": "standard",
+            "is_available": False,
+            "max_passengers": 4,
+            "amenities": []
         }
     
-    # Insert user
     result = await db.users.insert_one(user_doc)
     user_doc["_id"] = result.inserted_id
     
-    # Create access token
     access_token = create_access_token(str(result.inserted_id))
-    
-    # Return user data and token
     user_response = serialize_user(user_doc)
+    
     return Token(
         access_token=access_token,
         token_type="bearer",
@@ -305,20 +379,16 @@ async def register_user(user_data: UserCreate):
 
 @api_router.post("/auth/login", response_model=Token)
 async def login_user(login_data: UserLogin):
-    # Find user
     user = await db.users.find_one({"phone": login_data.phone})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid phone or password")
     
-    # Verify password
     if not verify_password(login_data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid phone or password")
     
-    # Create access token
     access_token = create_access_token(str(user["_id"]))
-    
-    # Return user data and token
     user_response = serialize_user(user)
+    
     return Token(
         access_token=access_token,
         token_type="bearer",
@@ -385,8 +455,37 @@ async def toggle_driver_availability(
     
     return {"message": "Availability updated successfully", "is_available": is_available}
 
+@api_router.get("/vehicle-types")
+async def get_vehicle_types():
+    """Get available vehicle types and their pricing"""
+    standard_pricing = await get_vehicle_pricing("standard")
+    vip_pricing = await get_vehicle_pricing("vip")
+    
+    return {
+        "vehicle_types": [
+            {
+                "type": "standard",
+                "name": "عادية",
+                "description": "سيارة عادية مريحة",
+                "base_fare": standard_pricing.base_fare,
+                "rate_per_km": standard_pricing.rate_per_km,
+                "rate_per_minute": standard_pricing.rate_per_minute,
+                "features": ["مكيف هواء", "مقاعد مريحة"]
+            },
+            {
+                "type": "vip",
+                "name": "VIP",
+                "description": "سيارة فاخرة مع خدمات إضافية",
+                "base_fare": vip_pricing.base_fare,
+                "rate_per_km": vip_pricing.rate_per_km,
+                "rate_per_minute": vip_pricing.rate_per_minute,
+                "features": ["مكيف هواء", "واي فاي", "مياه مجانية", "شاحن هاتف", "مقاعد جلدية"]
+            }
+        ]
+    }
+
 # =====================================================
-# RIDE MANAGEMENT ENDPOINTS
+# ENHANCED RIDE MANAGEMENT ENDPOINTS
 # =====================================================
 
 @api_router.post("/rides/request", response_model=RideResponse)
@@ -397,28 +496,51 @@ async def request_ride(
     if current_user["user_type"] != "passenger":
         raise HTTPException(status_code=403, detail="Only passengers can request rides")
     
-    # Calculate estimated fare (simple calculation for now)
-    estimated_fare = 5000.0  # Base fare in IQD
+    # Validation for different ride types
+    if ride_request.ride_type == "scheduled":
+        if not ride_request.scheduled_time:
+            raise HTTPException(status_code=400, detail="Scheduled time is required for pre-booked rides")
+        if ride_request.scheduled_time <= datetime.utcnow():
+            raise HTTPException(status_code=400, detail="Scheduled time must be in the future")
+    
+    if ride_request.ride_type == "open_ride":
+        if not ride_request.max_duration_minutes:
+            ride_request.max_duration_minutes = 480  # Default 8 hours
+    
+    # Calculate estimated fare
+    estimated_fare = await calculate_ride_fare({
+        "ride_type": ride_request.ride_type,
+        "vehicle_type": ride_request.vehicle_type
+    })
+    
+    # Set initial status based on ride type
+    initial_status = RideStatus.SCHEDULED if ride_request.ride_type == "scheduled" else RideStatus.REQUESTED
     
     ride_doc = {
         "passenger_id": str(current_user["_id"]),
         "driver_id": None,
         "pickup_location": ride_request.pickup_location.dict(),
-        "destination_location": ride_request.destination_location.dict(),
-        "status": RideStatus.REQUESTED,
+        "destination_location": ride_request.destination_location.dict() if ride_request.destination_location else None,
+        "status": initial_status,
+        "ride_type": ride_request.ride_type,
+        "vehicle_type": ride_request.vehicle_type,
         "created_at": datetime.utcnow(),
+        "scheduled_time": ride_request.scheduled_time,
         "estimated_fare": estimated_fare,
         "actual_fare": None,
         "passenger_notes": ride_request.passenger_notes,
-        "driver_notes": None
+        "driver_notes": None,
+        "max_duration_minutes": ride_request.max_duration_minutes,
+        "started_at": None,
+        "ended_at": None,
+        "duration_minutes": None,
+        "distance_km": None
     }
     
     result = await db.rides.insert_one(ride_doc)
     ride_doc["_id"] = result.inserted_id
     
-    # Get passenger info
     passenger_info = serialize_user(current_user)
-    
     response_data = serialize_user(ride_doc)
     response_data["passenger_info"] = UserResponse(**passenger_info)
     response_data["driver_info"] = None
@@ -426,15 +548,41 @@ async def request_ride(
     return RideResponse(**response_data)
 
 @api_router.get("/rides/available", response_model=List[RideResponse])
-async def get_available_rides(current_user: dict = Depends(get_current_user)):
+async def get_available_rides(
+    vehicle_type: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
     if current_user["user_type"] != "driver":
         raise HTTPException(status_code=403, detail="Only drivers can view available rides")
     
-    rides = await db.rides.find({"status": RideStatus.REQUESTED}).to_list(50)
+    # Build query based on driver's vehicle type and current time
+    query = {
+        "$or": [
+            {"status": RideStatus.REQUESTED},  # Immediate rides
+            {  # Scheduled rides that are ready (within 30 minutes)
+                "status": RideStatus.SCHEDULED,
+                "scheduled_time": {
+                    "$lte": datetime.utcnow() + timedelta(minutes=30)
+                }
+            }
+        ]
+    }
+    
+    # Filter by driver's vehicle type if they specified one
+    driver_vehicle_type = current_user.get("driver_info", {}).get("vehicle_type", "standard")
+    if vehicle_type:
+        query["vehicle_type"] = vehicle_type
+    else:
+        # Show rides that match driver's vehicle type or lower
+        if driver_vehicle_type == "vip":
+            query["vehicle_type"] = {"$in": ["standard", "vip"]}
+        else:
+            query["vehicle_type"] = "standard"
+    
+    rides = await db.rides.find(query).to_list(50)
     
     result = []
     for ride in rides:
-        # Get passenger info
         passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
         
         ride_data = serialize_user(ride)
@@ -451,9 +599,19 @@ async def accept_ride(ride_id: str, current_user: dict = Depends(get_current_use
         raise HTTPException(status_code=403, detail="Only drivers can accept rides")
     
     # Check if ride exists and is available
-    ride = await db.rides.find_one({"_id": ObjectId(ride_id), "status": RideStatus.REQUESTED})
+    ride = await db.rides.find_one({
+        "_id": ObjectId(ride_id), 
+        "status": {"$in": [RideStatus.REQUESTED, RideStatus.SCHEDULED]}
+    })
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found or not available")
+    
+    # Check if driver's vehicle type matches ride requirement
+    driver_vehicle_type = current_user.get("driver_info", {}).get("vehicle_type", "standard")
+    ride_vehicle_type = ride.get("vehicle_type", "standard")
+    
+    if ride_vehicle_type == "vip" and driver_vehicle_type != "vip":
+        raise HTTPException(status_code=403, detail="VIP ride requires VIP vehicle")
     
     # Update ride with driver info
     await db.rides.update_one(
@@ -480,10 +638,99 @@ async def accept_ride(ride_id: str, current_user: dict = Depends(get_current_use
             "type": "ride_accepted",
             "ride_id": ride_id,
             "driver_name": current_user["name"],
+            "driver_info": current_user.get("driver_info", {}),
             "message": "تم قبول رحلتك!"
         }, str(passenger["_id"]))
     
     return {"message": "Ride accepted successfully"}
+
+@api_router.put("/rides/{ride_id}/start")
+async def start_ride(ride_id: str, current_user: dict = Depends(get_current_user)):
+    """Start the ride (driver arrived and passenger got in)"""
+    ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    
+    # Check authorization
+    if str(current_user["_id"]) != ride.get("driver_id"):
+        raise HTTPException(status_code=403, detail="Only the assigned driver can start the ride")
+    
+    await db.rides.update_one(
+        {"_id": ObjectId(ride_id)},
+        {
+            "$set": {
+                "status": RideStatus.IN_PROGRESS,
+                "started_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    await create_system_message(ride_id, "بدأت الرحلة")
+    
+    return {"message": "Ride started successfully"}
+
+@api_router.put("/rides/{ride_id}/complete")
+async def complete_ride(
+    ride_id: str, 
+    distance_km: Optional[float] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Complete the ride and calculate final fare"""
+    ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    
+    # Check authorization (both driver and passenger can complete)
+    if str(current_user["_id"]) not in [ride.get("driver_id"), ride["passenger_id"]]:
+        raise HTTPException(status_code=403, detail="Not authorized to complete this ride")
+    
+    # Calculate actual duration and fare
+    started_at = ride.get("started_at")
+    if not started_at:
+        raise HTTPException(status_code=400, detail="Ride was not started properly")
+    
+    ended_at = datetime.utcnow()
+    duration_minutes = int((ended_at - started_at).total_seconds() / 60)
+    
+    # Calculate final fare
+    actual_fare = await calculate_ride_fare(ride, duration_minutes, distance_km)
+    
+    update_data = {
+        "status": RideStatus.COMPLETED,
+        "ended_at": ended_at,
+        "duration_minutes": duration_minutes,
+        "actual_fare": actual_fare,
+        "updated_at": datetime.utcnow()
+    }
+    
+    if distance_km:
+        update_data["distance_km"] = distance_km
+    
+    await db.rides.update_one(
+        {"_id": ObjectId(ride_id)},
+        {"$set": update_data}
+    )
+    
+    await create_system_message(ride_id, f"تم إنهاء الرحلة بنجاح. المدة: {duration_minutes} دقيقة، التكلفة: {actual_fare} د.ع")
+    
+    # Update total rides count for both users
+    await db.users.update_one(
+        {"_id": ObjectId(ride["passenger_id"])},
+        {"$inc": {"total_rides": 1}}
+    )
+    
+    if ride.get("driver_id"):
+        await db.users.update_one(
+            {"_id": ObjectId(ride["driver_id"])},
+            {"$inc": {"total_rides": 1}}
+        )
+    
+    return {
+        "message": "Ride completed successfully",
+        "duration_minutes": duration_minutes,
+        "actual_fare": actual_fare
+    }
 
 @api_router.put("/rides/{ride_id}/status")
 async def update_ride_status(
@@ -500,21 +747,13 @@ async def update_ride_status(
        (current_user["user_type"] == "driver" and str(current_user["_id"]) != ride.get("driver_id")):
         raise HTTPException(status_code=403, detail="Not authorized to update this ride")
     
-    update_data = {"status": status, "updated_at": datetime.utcnow()}
-    
-    if status == RideStatus.COMPLETED:
-        update_data["completed_at"] = datetime.utcnow()
-        update_data["actual_fare"] = ride.get("estimated_fare")
-    
     await db.rides.update_one(
         {"_id": ObjectId(ride_id)},
-        {"$set": update_data}
+        {"$set": {"status": status, "updated_at": datetime.utcnow()}}
     )
     
     # Send system message
     status_messages = {
-        RideStatus.IN_PROGRESS: "بدأت الرحلة",
-        RideStatus.COMPLETED: "تم إنهاء الرحلة بنجاح",
         RideStatus.CANCELLED: "تم إلغاء الرحلة"
     }
     
@@ -543,6 +782,36 @@ async def get_my_rides(current_user: dict = Depends(get_current_user)):
     result = []
     for ride in rides:
         # Get passenger and driver info
+        passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+        driver = None
+        if ride.get("driver_id"):
+            driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
+        
+        ride_data = serialize_user(ride)
+        ride_data["passenger_info"] = UserResponse(**serialize_user(passenger))
+        ride_data["driver_info"] = DriverResponse(**serialize_user(driver)) if driver else None
+        
+        result.append(RideResponse(**ride_data))
+    
+    return result
+
+@api_router.get("/rides/scheduled")
+async def get_scheduled_rides(current_user: dict = Depends(get_current_user)):
+    """Get upcoming scheduled rides"""
+    if current_user["user_type"] == "passenger":
+        query = {"passenger_id": str(current_user["_id"])}
+    else:
+        query = {"driver_id": str(current_user["_id"])}
+    
+    query.update({
+        "status": {"$in": [RideStatus.SCHEDULED, RideStatus.ACCEPTED]},
+        "scheduled_time": {"$gte": datetime.utcnow()}
+    })
+    
+    rides = await db.rides.find(query).sort("scheduled_time", 1).to_list(20)
+    
+    result = []
+    for ride in rides:
         passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
         driver = None
         if ride.get("driver_id"):
@@ -590,7 +859,6 @@ async def send_message(
     if user_id not in [ride["passenger_id"], ride.get("driver_id")]:
         raise HTTPException(status_code=403, detail="Not authorized to send messages in this chat")
     
-    # Create message document
     message_doc = {
         "ride_id": message.ride_id,
         "sender_id": user_id,
@@ -606,7 +874,6 @@ async def send_message(
     result = await db.messages.insert_one(message_doc)
     message_doc["_id"] = result.inserted_id
     
-    # Prepare response
     message_response = MessageResponse(**serialize_message(message_doc))
     
     # Send to other participant via WebSocket
@@ -621,7 +888,6 @@ async def send_message(
 
 @api_router.get("/chat/{ride_id}", response_model=ChatResponse)
 async def get_chat(ride_id: str, current_user: dict = Depends(get_current_user)):
-    # Verify user is part of the ride
     ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
@@ -630,10 +896,8 @@ async def get_chat(ride_id: str, current_user: dict = Depends(get_current_user))
     if user_id not in [ride["passenger_id"], ride.get("driver_id")]:
         raise HTTPException(status_code=403, detail="Not authorized to view this chat")
     
-    # Get all messages for this ride
     messages = await db.messages.find({"ride_id": ride_id}).sort("timestamp", 1).to_list(1000)
     
-    # Get participants info
     participants = []
     passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
     participants.append(UserResponse(**serialize_user(passenger)))
@@ -642,7 +906,6 @@ async def get_chat(ride_id: str, current_user: dict = Depends(get_current_user))
         driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
         participants.append(UserResponse(**serialize_user(driver)))
     
-    # Count unread messages
     unread_count = await db.messages.count_documents({
         "ride_id": ride_id,
         "sender_id": {"$ne": user_id},
@@ -662,50 +925,6 @@ async def get_chat(ride_id: str, current_user: dict = Depends(get_current_user))
         unread_count=unread_count
     )
 
-@api_router.get("/chat/my-chats", response_model=List[ChatResponse])
-async def get_my_chats(current_user: dict = Depends(get_current_user)):
-    user_id = str(current_user["_id"])
-    
-    # Get rides where user is participant
-    if current_user["user_type"] == "passenger":
-        rides = await db.rides.find({"passenger_id": user_id, "driver_id": {"$ne": None}}).sort("created_at", -1).to_list(50)
-    else:
-        rides = await db.rides.find({"driver_id": user_id}).sort("created_at", -1).to_list(50)
-    
-    chats = []
-    for ride in rides:
-        # Get last message
-        last_message = await db.messages.find_one(
-            {"ride_id": str(ride["_id"])},
-            sort=[("timestamp", -1)]
-        )
-        
-        if last_message:  # Only include chats with messages
-            # Get participants
-            participants = []
-            passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
-            participants.append(UserResponse(**serialize_user(passenger)))
-            
-            if ride.get("driver_id"):
-                driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
-                participants.append(UserResponse(**serialize_user(driver)))
-            
-            # Count unread messages
-            unread_count = await db.messages.count_documents({
-                "ride_id": str(ride["_id"]),
-                "sender_id": {"$ne": user_id},
-                "is_read": False
-            })
-            
-            chats.append(ChatResponse(
-                ride_id=str(ride["_id"]),
-                participants=participants,
-                messages=[MessageResponse(**serialize_message(last_message))],
-                unread_count=unread_count
-            ))
-    
-    return chats
-
 # =====================================================
 # RATING SYSTEM ENDPOINTS
 # =====================================================
@@ -715,12 +934,10 @@ async def create_rating(
     rating_data: RatingCreate,
     current_user: dict = Depends(get_current_user)
 ):
-    # Get ride information
     ride = await db.rides.find_one({"_id": ObjectId(rating_data.ride_id)})
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found")
     
-    # Check if user is part of this ride
     if str(current_user["_id"]) not in [ride["passenger_id"], ride.get("driver_id")]:
         raise HTTPException(status_code=403, detail="You can only rate rides you participated in")
     
@@ -732,14 +949,6 @@ async def create_rating(
     
     if not rated_user_id:
         raise HTTPException(status_code=400, detail="Cannot rate: ride not completed properly")
-    
-    # Check if rating already exists
-    existing_rating = await db.ratings.find_one({
-        "ride_id": rating_data.ride_id,
-        "rater_id": str(current_user["_id"])
-    })
-    if existing_rating:
-        raise HTTPException(status_code=400, detail="You have already rated this ride")
     
     # Create rating
     rating_doc = {
@@ -764,6 +973,47 @@ async def create_rating(
     )
     
     return RatingResponse(**serialize_user(rating_doc))
+
+# =====================================================
+# BACKGROUND TASKS FOR SCHEDULED RIDES
+# =====================================================
+
+async def check_scheduled_rides():
+    """Background task to process scheduled rides"""
+    while True:
+        try:
+            # Find scheduled rides that should be activated now
+            current_time = datetime.utcnow()
+            ready_rides = await db.rides.find({
+                "status": RideStatus.SCHEDULED,
+                "scheduled_time": {"$lte": current_time + timedelta(minutes=15)},  # 15 minutes before
+                "driver_id": None  # Not yet accepted
+            }).to_list(100)
+            
+            for ride in ready_rides:
+                # Update status to make it available for drivers
+                await db.rides.update_one(
+                    {"_id": ride["_id"]},
+                    {"$set": {"status": RideStatus.REQUESTED}}
+                )
+                
+                # Notify passenger that ride is now being matched
+                await manager.send_personal_message({
+                    "type": "ride_ready",
+                    "ride_id": str(ride["_id"]),
+                    "message": "رحلتك المجدولة جاهزة الآن، نبحث عن سائق..."
+                }, ride["passenger_id"])
+        
+        except Exception as e:
+            print(f"Error in scheduled rides checker: {e}")
+        
+        # Check every minute
+        await asyncio.sleep(60)
+
+# Start background task
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(check_scheduled_rides())
 
 # =====================================================
 # BASIC ENDPOINTS
