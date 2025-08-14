@@ -169,7 +169,7 @@ class OrangeBusAPITester:
         
         # Test passenger login
         login_data = {
-            "phone": "+964770123456",
+            "phone": self.passenger_phone,
             "password": "SecurePass123!"
         }
         
