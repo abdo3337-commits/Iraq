@@ -1036,7 +1036,12 @@ const PassengerDashboard: React.FC<{
 };
 
 // Delivery Dashboard (unchanged but with new colors)
-const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const DeliveryDashboard: React.FC<{ 
+  onBack: () => void;
+  onProfilePress?: () => void;
+  onHistoryPress?: () => void;
+  onSettingsPress?: () => void;
+}> = ({ onBack, onProfilePress, onHistoryPress, onSettingsPress }) => {
   const { user } = useAuth();
   const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
   const [myDeliveries, setMyDeliveries] = useState([]);
