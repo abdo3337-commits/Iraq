@@ -376,8 +376,7 @@ class OrangeBusAPITester:
             return
         
         # Update to in_progress
-        status_data = {"status": "in_progress"}
-        success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status", status_data, self.driver_token)
+        success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status?status=in_progress", token=self.driver_token)
         if success and response.status_code == 200:
             self.log_result("Ride status to in_progress", True, "Status updated to in_progress")
         else:
@@ -385,8 +384,7 @@ class OrangeBusAPITester:
             self.log_result("Ride status to in_progress", False, error_msg)
         
         # Update to completed
-        status_data = {"status": "completed"}
-        success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status", status_data, self.driver_token)
+        success, response = self.make_request("PUT", f"/rides/{self.test_ride_id}/status?status=completed", token=self.driver_token)
         if success and response.status_code == 200:
             self.log_result("Ride status to completed", True, "Status updated to completed")
         else:
