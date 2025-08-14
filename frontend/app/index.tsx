@@ -195,8 +195,11 @@ const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted })
     <View style={styles.welcomeContainer}>
       <View style={styles.welcomeHeader}>
         <View style={styles.logoContainer}>
-          {/* Logo placeholder - we'll add the actual logo here */}
-          <Text style={styles.logoText}>أبو الغربية</Text>
+          <Image 
+            source={{ uri: 'https://customer-assets.emergentagent.com/job_aburide/artifacts/4ksqh5gf_IMG_1449.jpeg' }}
+            style={styles.logoImage}
+            resizeMode="contain"
+          />
           <Text style={styles.logoSubtext}>Abu Al-Gharbiya</Text>
         </View>
         <Text style={styles.appTitle}>مرحباً بك</Text>
