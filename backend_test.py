@@ -151,7 +151,7 @@ class OrangeBusAPITester:
         
         duplicate_data = {
             "name": "محاولة مكررة",
-            "phone": "+964770123456",  # Same as passenger
+            "phone": self.passenger_phone,  # Same as passenger
             "user_type": "passenger",
             "password": "AnotherPass789!"
         }
