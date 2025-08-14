@@ -753,7 +753,7 @@ async def upload_document(
         file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
         
         # Generate unique filename
-        unique_filename = f"{current_user['user_id']}_{document_type}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        unique_filename = f"{str(current_user['_id'])}_{document_type}_{uuid.uuid4().hex[:8]}.{file_extension}"
         
         # In production, save to cloud storage (AWS S3, Google Cloud, etc.)
         # For now, save as base64 in database
