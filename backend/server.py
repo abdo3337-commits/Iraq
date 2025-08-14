@@ -1318,9 +1318,11 @@ async def send_message(
     # Send to other participant via WebSocket
     other_user_id = service[user_field] if user_id == service.get(other_field) else service.get(other_field)
     if other_user_id:
+        message_for_ws = message_doc.copy()
+        message_for_ws["id"] = str(message_doc["_id"])
         await manager.send_personal_message({
             "type": "new_message",
-            "message": serialize_message(message_doc)
+            "message": message_for_ws
         }, other_user_id)
     
     return message_response
