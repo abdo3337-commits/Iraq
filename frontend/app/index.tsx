@@ -29,7 +29,10 @@ import PaymentSelectionModal from '../components/PaymentSelectionModal';
 import ProfileScreen from '../components/ProfileScreen';
 import HistoryScreen from '../components/HistoryScreen';
 import SettingsScreen from '../components/SettingsScreen';
-// import NotificationSystem from '../components/NotificationSystem';
+import OTPVerification from '../components/OTPVerification';
+import ServiceTypeSelector from '../components/ServiceTypeSelector';
+import DocumentUpload from '../components/DocumentUpload';
+import EarningsScreen from '../components/EarningsScreen';
 import { Colors, Spacing, BorderRadius, FontSizes, Shadows } from '../components/styles';
 
 const { width, height } = Dimensions.get('window');
