@@ -393,7 +393,7 @@ async def accept_ride(ride_id: str, current_user: dict = Depends(get_current_use
 @api_router.put("/rides/{ride_id}/status")
 async def update_ride_status(
     ride_id: str,
-    status: RideStatus,
+    status: str,
     current_user: dict = Depends(get_current_user)
 ):
     ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
