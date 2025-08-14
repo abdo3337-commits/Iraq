@@ -189,7 +189,7 @@ const useAuth = () => {
   return context;
 };
 
-// Welcome Screen Component (Updated with new branding)
+// Welcome Screen Component (Updated with new branding and colors)
 const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted }) => {
   return (
     <View style={styles.welcomeContainer}>
@@ -206,20 +206,24 @@ const WelcomeScreen: React.FC<{ onGetStarted: () => void }> = ({ onGetStarted })
       <View style={styles.welcomeContent}>
         <View style={styles.featuresList}>
           <View style={styles.featureItem}>
-            <MaterialIcons name="directions-car" size={24} color="#00C853" />
+            <MaterialIcons name="directions-car" size={24} color={Colors.success} />
             <Text style={styles.featureText}>خدمة النقل والمشاوير</Text>
           </View>
           <View style={styles.featureItem}>
-            <MaterialIcons name="local-shipping" size={24} color="#00C853" />
+            <MaterialIcons name="local-shipping" size={24} color={Colors.success} />
             <Text style={styles.featureText}>توصيل الطرود والمواد</Text>
           </View>
           <View style={styles.featureItem}>
-            <MaterialIcons name="location-on" size={24} color="#00C853" />
+            <MaterialIcons name="location-on" size={24} color={Colors.success} />
             <Text style={styles.featureText}>تتبع مباشر للرحلة</Text>
           </View>
           <View style={styles.featureItem}>
-            <MaterialIcons name="star" size={24} color="#00C853" />
+            <MaterialIcons name="star" size={24} color={Colors.success} />
             <Text style={styles.featureText}>تقييمات موثقة</Text>
+          </View>
+          <View style={styles.featureItem}>
+            <MaterialIcons name="payment" size={24} color={Colors.primary} />
+            <Text style={styles.featureText}>طرق دفع متعددة</Text>
           </View>
         </View>
       </View>
@@ -242,8 +246,8 @@ const ServiceSelection: React.FC<{ onServiceSelect: (service: 'ride' | 'delivery
           style={styles.serviceOption}
           onPress={() => onServiceSelect('ride')}
         >
-          <View style={styles.serviceIconContainer}>
-            <Ionicons name="car" size={40} color="#00C853" />
+          <View style={[styles.serviceIconContainer, { backgroundColor: Colors.sectionBackground }]}>
+            <Ionicons name="car" size={40} color={Colors.success} />
           </View>
           <Text style={styles.serviceOptionTitle}>طلب رحلة</Text>
           <Text style={styles.serviceOptionDesc}>انتقل من مكان إلى آخر بأمان</Text>
@@ -253,8 +257,8 @@ const ServiceSelection: React.FC<{ onServiceSelect: (service: 'ride' | 'delivery
           style={styles.serviceOption}
           onPress={() => onServiceSelect('delivery')}
         >
-          <View style={styles.serviceIconContainer}>
-            <MaterialIcons name="local-shipping" size={40} color="#FF6B35" />
+          <View style={[styles.serviceIconContainer, { backgroundColor: Colors.sectionBackground }]}>
+            <MaterialIcons name="local-shipping" size={40} color={Colors.delivery} />
           </View>
           <Text style={styles.serviceOptionTitle}>طلب توصيل</Text>
           <Text style={styles.serviceOptionDesc}>توصيل طرودك ومشترياتك</Text>
@@ -297,26 +301,26 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
         
         <View style={styles.authForm}>
           <View style={styles.inputContainer}>
-            <Ionicons name="phone-portrait" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="phone-portrait" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={phone}
               onChangeText={setPhone}
               placeholder="رقم الهاتف"
               keyboardType="phone-pad"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="lock-closed" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={password}
               onChangeText={setPassword}
               placeholder="كلمة المرور"
               secureTextEntry
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
@@ -326,7 +330,7 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={Colors.white} />
             ) : (
               <Text style={styles.primaryButtonText}>تسجيل الدخول</Text>
             )}
@@ -398,7 +402,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
                 <Ionicons 
                   name="person" 
                   size={24} 
-                  color={userType === 'passenger' ? '#00C853' : '#666'} 
+                  color={userType === 'passenger' ? Colors.success : Colors.darkGray} 
                 />
                 <Text style={[
                   styles.userTypeButtonText,
@@ -417,7 +421,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
                 <Ionicons 
                   name="car-sport" 
                   size={24} 
-                  color={userType === 'driver' ? '#00C853' : '#666'} 
+                  color={userType === 'driver' ? Colors.success : Colors.darkGray} 
                 />
                 <Text style={[
                   styles.userTypeButtonText,
@@ -430,30 +434,30 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="person" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="person" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={name}
               onChangeText={setName}
               placeholder="الاسم الكامل *"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="phone-portrait" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="phone-portrait" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={phone}
               onChangeText={setPhone}
               placeholder="رقم الهاتف *"
               keyboardType="phone-pad"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="mail" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="mail" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={email}
@@ -461,19 +465,19 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
               placeholder="البريد الإلكتروني (اختياري)"
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
           <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed" size={20} color="#666" style={styles.inputIcon} />
+            <Ionicons name="lock-closed" size={20} color={Colors.darkGray} style={styles.inputIcon} />
             <TextInput
               style={styles.textInput}
               value={password}
               onChangeText={setPassword}
               placeholder="كلمة المرور *"
               secureTextEntry
-              placeholderTextColor="#999"
+              placeholderTextColor={Colors.mediumGray}
             />
           </View>
 
@@ -483,7 +487,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#ffffff" />
+              <ActivityIndicator color={Colors.white} />
             ) : (
               <Text style={styles.primaryButtonText}>إنشاء الحساب</Text>
             )}
@@ -520,7 +524,7 @@ const Dashboard: React.FC = () => {
   }
 };
 
-// Passenger Dashboard for Rides
+// Passenger Dashboard for Rides with Payment Integration
 const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
@@ -531,10 +535,21 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [rideRequested, setRideRequested] = useState(false);
   const [vehicleType, setVehicleType] = useState<'standard' | 'vip'>('standard');
   const [rideType, setRideType] = useState<'immediate' | 'scheduled' | 'open_ride'>('immediate');
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [estimatedCost, setEstimatedCost] = useState<number>(0);
+  const [scheduledDateTime, setScheduledDateTime] = useState<Date | null>(null);
 
   useEffect(() => {
     getCurrentLocation();
   }, []);
+
+  useEffect(() => {
+    if (pickupLocation && destinationLocation && rideType !== 'open_ride') {
+      calculateEstimatedCost();
+    } else if (rideType === 'open_ride') {
+      setEstimatedCost(vehicleType === 'vip' ? 3000 : 1500); // Base rate for open rides
+    }
+  }, [pickupLocation, destinationLocation, vehicleType, rideType]);
 
   const getCurrentLocation = async () => {
     try {
@@ -558,6 +573,39 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
+  const calculateEstimatedCost = () => {
+    if (!pickupLocation || !destinationLocation) return;
+
+    // Simple distance calculation
+    const distance = calculateDistance(pickupLocation, destinationLocation);
+    const baseFare = vehicleType === 'vip' ? 2000 : 1000;
+    const perKm = vehicleType === 'vip' ? 800 : 500;
+    
+    let cost = baseFare + (distance * perKm);
+    
+    if (rideType === 'scheduled') {
+      cost += 500; // Booking fee for scheduled rides
+    }
+    
+    setEstimatedCost(Math.round(cost));
+  };
+
+  const calculateDistance = (location1: LocationData, location2: LocationData): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = toRad(location2.latitude - location1.latitude);
+    const dLon = toRad(location2.longitude - location1.longitude);
+    const lat1 = toRad(location1.latitude);
+    const lat2 = toRad(location2.latitude);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    return R * c;
+  };
+
+  const toRad = (value: number) => (value * Math.PI) / 180;
+
   const handleLocationSelect = (location: LocationData) => {
     if (modalType === 'pickup') {
       setPickupLocation(location);
@@ -572,19 +620,35 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       return;
     }
 
+    if (rideType === 'scheduled' && !scheduledDateTime) {
+      Alert.alert('تنبيه', 'يرجى تحديد موعد الرحلة');
+      return;
+    }
+
+    // Show payment modal before creating ride
+    setPaymentModalVisible(true);
+  };
+
+  const handlePaymentSelect = async (paymentMethod: any, paymentDetails?: any) => {
     try {
       const rideData: any = {
         pickup_location: pickupLocation,
         ride_type: rideType,
         vehicle_type: vehicleType,
+        payment_method: paymentMethod.type,
+        payment_details: paymentDetails,
       };
 
-      if (rideType !== 'open_ride') {
+      if (rideType !== 'open_ride' && destinationLocation) {
         rideData.destination_location = destinationLocation;
       }
 
       if (rideType === 'open_ride') {
         rideData.max_duration_minutes = 480; // 8 hours max
+      }
+
+      if (rideType === 'scheduled' && scheduledDateTime) {
+        rideData.scheduled_time = scheduledDateTime.toISOString();
       }
 
       const response = await apiCall('/rides/request', {
@@ -593,10 +657,23 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       });
 
       setRideRequested(true);
-      Alert.alert('تم بنجاح', 'تم طلب الرحلة بنجاح!');
+      setPaymentModalVisible(false);
+      
+      Alert.alert(
+        'تم بنجاح', 
+        `تم طلب الرحلة بنجاح!\nرقم الرحلة: ${response.id}\nطريقة الدفع: ${paymentMethod.name}`
+      );
     } catch (error: any) {
       Alert.alert('خطأ', error.message);
     }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-IQ', {
+      style: 'currency',
+      currency: 'IQD',
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
 
   const mapMarkers = [
@@ -606,7 +683,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       longitude: pickupLocation.longitude,
       title: 'نقطة الانطلاق',
       description: pickupLocation.address,
-      color: '#2196F3',
+      color: Colors.pickup,
     }] : []),
     ...(destinationLocation ? [{
       id: 'destination',
@@ -614,7 +691,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       longitude: destinationLocation.longitude,
       title: 'الوجهة',
       description: destinationLocation.address,
-      color: '#FF4444',
+      color: Colors.destination,
     }] : []),
   ];
 
@@ -623,14 +700,14 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       {/* Header */}
       <View style={styles.dashboardHeader}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>طلب رحلة</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={32} color="#00C853" />
+          <Ionicons name="person-circle" size={32} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -682,7 +759,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             style={[styles.vehicleOption, vehicleType === 'standard' && styles.vehicleOptionActive]}
             onPress={() => setVehicleType('standard')}
           >
-            <Ionicons name="car" size={24} color={vehicleType === 'standard' ? '#00C853' : '#666'} />
+            <Ionicons name="car" size={24} color={vehicleType === 'standard' ? Colors.success : Colors.darkGray} />
             <View style={styles.vehicleInfo}>
               <Text style={[styles.vehicleTitle, vehicleType === 'standard' && styles.vehicleTextActive]}>
                 سيارة عادية
@@ -698,7 +775,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             style={[styles.vehicleOption, vehicleType === 'vip' && styles.vehicleOptionActive]}
             onPress={() => setVehicleType('vip')}
           >
-            <Ionicons name="car-sport" size={24} color={vehicleType === 'vip' ? '#00C853' : '#666'} />
+            <Ionicons name="car-sport" size={24} color={vehicleType === 'vip' ? Colors.success : Colors.darkGray} />
             <View style={styles.vehicleInfo}>
               <Text style={[styles.vehicleTitle, vehicleType === 'vip' && styles.vehicleTextActive]}>
                 سيارة VIP
@@ -719,7 +796,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             setLocationModalVisible(true);
           }}
         >
-          <Ionicons name="radio-button-on" size={20} color="#2196F3" />
+          <Ionicons name="radio-button-on" size={20} color={Colors.pickup} />
           <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
             {pickupLocation ? pickupLocation.address : 'من'}
           </Text>
@@ -733,7 +810,7 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               setLocationModalVisible(true);
             }}
           >
-            <Ionicons name="location" size={20} color="#FF4444" />
+            <Ionicons name="location" size={20} color={Colors.destination} />
             <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
               {destinationLocation ? destinationLocation.address : 'إلى'}
             </Text>
@@ -742,10 +819,18 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
         {rideType === 'open_ride' && (
           <View style={styles.openRideInfo}>
-            <MaterialIcons name="timer" size={20} color="#FF6B35" />
+            <MaterialIcons name="timer" size={20} color={Colors.delivery} />
             <Text style={styles.openRideText}>
               رحلة مفتوحة - ادفع بناءً على الوقت المستغرق
             </Text>
+          </View>
+        )}
+
+        {/* Cost Display */}
+        {estimatedCost > 0 && (
+          <View style={styles.costDisplay}>
+            <Text style={styles.costLabel}>التكلفة المقدرة:</Text>
+            <Text style={styles.costValue}>{formatCurrency(estimatedCost)}</Text>
           </View>
         )}
 
@@ -754,8 +839,9 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           onPress={handleRequestRide}
           disabled={rideRequested}
         >
+          <MaterialIcons name="payment" size={20} color={Colors.white} style={{ marginRight: 8 }} />
           <Text style={styles.primaryButtonText}>
-            {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
+            {rideRequested ? 'تم طلب الرحلة' : 'اختر طريقة الدفع'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -768,11 +854,20 @@ const PassengerDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         title={modalType === 'pickup' ? 'اختر نقطة الانطلاق' : 'اختر الوجهة'}
         currentLocation={currentLocation}
       />
+
+      {/* Payment Selection Modal */}
+      <PaymentSelectionModal
+        visible={paymentModalVisible}
+        onClose={() => setPaymentModalVisible(false)}
+        onPaymentSelect={handlePaymentSelect}
+        amount={estimatedCost}
+        serviceType="ride"
+      />
     </View>
   );
 };
 
-// Delivery Dashboard
+// Delivery Dashboard (unchanged but with new colors)
 const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const { user } = useAuth();
   const [deliveryModalVisible, setDeliveryModalVisible] = useState(false);
@@ -830,14 +925,14 @@ const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   const getStatusColor = (status: string) => {
     const colorMap: { [key: string]: string } = {
-      'requested': '#FF9800',
-      'accepted': '#2196F3',
-      'picked_up': '#00C853',
-      'in_transit': '#00C853',
-      'delivered': '#4CAF50',
-      'cancelled': '#F44336'
+      'requested': Colors.warning,
+      'accepted': Colors.info,
+      'picked_up': Colors.success,
+      'in_transit': Colors.success,
+      'delivered': Colors.success,
+      'cancelled': Colors.error
     };
-    return colorMap[status] || '#666666';
+    return colorMap[status] || Colors.mediumGray;
   };
 
   const renderDeliveryItem = ({ item }: { item: any }) => (
@@ -874,14 +969,14 @@ const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       {/* Header */}
       <View style={styles.dashboardHeader}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>خدمة التوصيل</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={32} color="#00C853" />
+          <Ionicons name="person-circle" size={32} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -892,17 +987,17 @@ const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             style={styles.primaryActionButton}
             onPress={() => setDeliveryModalVisible(true)}
           >
-            <MaterialIcons name="add-box" size={24} color="#FFFFFF" />
+            <MaterialIcons name="add-box" size={24} color={Colors.white} />
             <Text style={styles.primaryActionText}>طلب توصيل جديد</Text>
           </TouchableOpacity>
 
           <View style={styles.secondaryActions}>
             <TouchableOpacity style={styles.secondaryActionButton}>
-              <MaterialIcons name="search" size={20} color="#00C853" />
+              <MaterialIcons name="search" size={20} color={Colors.primary} />
               <Text style={styles.secondaryActionText}>تتبع طرد</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.secondaryActionButton}>
-              <MaterialIcons name="history" size={20} color="#00C853" />
+              <MaterialIcons name="history" size={20} color={Colors.primary} />
               <Text style={styles.secondaryActionText}>السجل</Text>
             </TouchableOpacity>
           </View>
@@ -920,7 +1015,7 @@ const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             />
           ) : (
             <View style={styles.emptyContainer}>
-              <MaterialIcons name="local-shipping" size={48} color="#ccc" />
+              <MaterialIcons name="local-shipping" size={48} color={Colors.mediumGray} />
               <Text style={styles.emptyText}>لا توجد طلبات توصيل بعد</Text>
               <Text style={styles.emptySubtext}>اطلب أول توصيل لك الآن!</Text>
             </View>
@@ -939,7 +1034,7 @@ const DeliveryDashboard: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   );
 };
 
-// Driver Dashboard with both services
+// Driver Dashboard with both services (unchanged but with new colors)
 const DriverDashboard: React.FC = () => {
   const { user } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
@@ -1033,7 +1128,7 @@ const DriverDashboard: React.FC = () => {
       longitude: ride.pickup_location.longitude,
       title: 'طلب رحلة',
       description: ride.destination_location ? `إلى: ${ride.destination_location.address}` : 'رحلة مفتوحة',
-      color: '#2196F3',
+      color: Colors.pickup,
     })),
     ...availableDeliveries.map((delivery: any) => ({
       id: `delivery-${delivery.id}`,
@@ -1041,7 +1136,7 @@ const DriverDashboard: React.FC = () => {
       longitude: delivery.pickup_location.longitude,
       title: 'طلب توصيل',
       description: `إلى: ${delivery.delivery_location.address}`,
-      color: '#FF6B35',
+      color: Colors.delivery,
     })),
   ];
 
@@ -1054,7 +1149,7 @@ const DriverDashboard: React.FC = () => {
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={40} color="#00C853" />
+          <Ionicons name="person-circle" size={40} color={Colors.primary} />
         </TouchableOpacity>
       </View>
 
@@ -1155,7 +1250,7 @@ const DriverDashboard: React.FC = () => {
             <MaterialIcons 
               name={activeTab === 'rides' ? 'directions-car' : 'local-shipping'} 
               size={48} 
-              color="#ccc" 
+              color={Colors.mediumGray} 
             />
             <Text style={styles.emptyText}>
               لا توجد {activeTab === 'rides' ? 'رحلات' : 'طلبات توصيل'} متاحة
@@ -1186,7 +1281,7 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" backgroundColor="#FFFFFF" />
+        <StatusBar style="dark" backgroundColor={Colors.white} />
         <AppContent 
           showWelcome={showWelcome}
           setShowWelcome={setShowWelcome}
@@ -1210,7 +1305,7 @@ const AppContent: React.FC<{
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00C853" />
+        <ActivityIndicator size="large" color={Colors.primary} />
         <Text style={styles.loadingText}>جارٍ التحميل...</Text>
       </View>
     );
@@ -1231,7 +1326,7 @@ const AppContent: React.FC<{
   return <RegisterScreen onSwitchToLogin={() => setAuthMode('login')} />;
 };
 
-// Styles
+// Styles with New Color System
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1241,19 +1336,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666666',
+    marginTop: Spacing.md,
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
   },
   
   // Welcome Screen Styles
   welcomeContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.lg,
   },
   welcomeHeader: {
     alignItems: 'center',
@@ -1262,28 +1357,28 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
   logoText: {
-    fontSize: 32,
+    fontSize: FontSizes.xxxl,
     fontWeight: 'bold',
     color: Colors.primary,
     marginBottom: 4,
   },
   logoSubtext: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
     fontStyle: 'italic',
   },
   appTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
   },
   appSubtitle: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   welcomeContent: {
@@ -1291,97 +1386,88 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   featuresList: {
-    paddingVertical: 20,
+    paddingVertical: Spacing.md,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.sectionBackground,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.sm,
   },
   featureText: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    marginLeft: 16,
+    fontSize: FontSizes.md,
+    color: Colors.textPrimary,
+    marginLeft: Spacing.md,
     flex: 1,
   },
   getStartedBtn: {
-    backgroundColor: '#00C853',
-    paddingVertical: 18,
-    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
     marginBottom: 40,
-    shadowColor: '#00C853',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    ...Shadows.medium,
   },
   getStartedText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: Colors.white,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
   },
 
   // Service Selection Styles
   serviceContainer: {
     flex: 1,
-    padding: 24,
+    padding: Spacing.lg,
     justifyContent: 'center',
   },
   serviceTitle: {
-    fontSize: 24,
+    fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 40,
   },
   serviceOptions: {
-    gap: 20,
+    gap: Spacing.lg,
   },
   serviceOption: {
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 16,
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    ...Shadows.medium,
   },
   serviceIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#F0F9F0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: Spacing.md,
   },
   serviceOptionTitle: {
-    fontSize: 20,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
   },
   serviceOptionDesc: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
 
   // Auth Screens Styles
   authContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.background,
   },
   authContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: Spacing.lg,
   },
   authHeader: {
     alignItems: 'center',
@@ -1389,119 +1475,115 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   authTitle: {
-    fontSize: 24,
+    fontSize: FontSizes.xl,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginTop: 16,
+    color: Colors.textPrimary,
+    marginTop: Spacing.md,
   },
   authForm: {
     flex: 1,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 16,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.md,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.lightGray,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 4,
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: Colors.gray,
   },
   inputIcon: {
-    marginRight: 12,
+    marginRight: Spacing.sm,
   },
   textInput: {
     flex: 1,
-    fontSize: 16,
+    fontSize: FontSizes.md,
     paddingVertical: 14,
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   userTypeContainer: {
-    marginBottom: 24,
+    marginBottom: Spacing.lg,
   },
   userTypeButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.sm,
   },
   userTypeButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
     borderWidth: 2,
-    borderColor: '#E8E8E8',
-    backgroundColor: '#F8F8F8',
+    borderColor: Colors.gray,
+    backgroundColor: Colors.lightGray,
   },
   userTypeButtonActive: {
-    borderColor: '#00C853',
-    backgroundColor: '#F0F9F0',
+    borderColor: Colors.success,
+    backgroundColor: Colors.sectionBackground,
   },
   userTypeButtonText: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: FontSizes.md,
+    color: Colors.darkGray,
     fontWeight: '500',
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
   },
   userTypeButtonTextActive: {
-    color: '#00C853',
+    color: Colors.success,
     fontWeight: 'bold',
   },
   primaryButton: {
-    backgroundColor: '#00C853',
-    paddingVertical: 18,
-    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
-    marginTop: 20,
-    shadowColor: '#00C853',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    marginTop: Spacing.lg,
+    ...Shadows.medium,
   },
   primaryButtonDisabled: {
     opacity: 0.6,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: Colors.white,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
   },
   secondaryButton: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: Spacing.lg,
   },
   secondaryButtonText: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
   },
   linkText: {
-    color: '#00C853',
+    color: Colors.primary,
     fontWeight: 'bold',
   },
 
   // Dashboard Styles
   dashboardContainer: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.sectionBackground,
   },
   dashboardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: Colors.gray,
   },
   headerLeft: {
     flex: 1,
@@ -1511,147 +1593,164 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   greeting: {
-    fontSize: 16,
-    color: '#666666',
+    fontSize: FontSizes.md,
+    color: Colors.textSecondary,
   },
   userName: {
-    fontSize: 20,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     marginTop: 2,
   },
   profileButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
   backButton: {
-    padding: 8,
+    padding: Spacing.sm,
   },
 
   // Map Container
   mapContainer: {
-    backgroundColor: '#E8E8E8',
+    backgroundColor: Colors.gray,
   },
 
   // Ride Options Styles
   rideOptionsContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: Colors.white,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
     marginTop: -20,
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    ...Shadows.large,
   },
   rideTypeContainer: {
-    marginBottom: 20,
+    marginBottom: Spacing.lg,
   },
   rideTypeButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: Spacing.sm,
   },
   rideTypeButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
+    backgroundColor: Colors.lightGray,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: Colors.gray,
   },
   rideTypeButtonActive: {
-    backgroundColor: '#00C853',
-    borderColor: '#00C853',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   rideTypeButtonText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: 'bold',
-    color: '#666666',
+    color: Colors.darkGray,
   },
   rideTypeButtonTextActive: {
-    color: '#FFFFFF',
+    color: Colors.white,
   },
   vehicleTypeContainer: {
-    gap: 12,
-    marginBottom: 20,
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
   },
   vehicleOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
+    padding: Spacing.md,
+    backgroundColor: Colors.lightGray,
+    borderRadius: BorderRadius.md,
     borderWidth: 2,
-    borderColor: '#E8E8E8',
+    borderColor: Colors.gray,
   },
   vehicleOptionActive: {
-    borderColor: '#00C853',
-    backgroundColor: '#F0F9F0',
+    borderColor: Colors.success,
+    backgroundColor: Colors.sectionBackground,
   },
   vehicleInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: Spacing.sm,
   },
   vehicleTitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   vehicleTextActive: {
-    color: '#00C853',
+    color: Colors.success,
   },
   vehicleDesc: {
-    fontSize: 12,
-    color: '#666666',
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
     marginTop: 2,
   },
   vehiclePrice: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: 'bold',
-    color: '#666666',
+    color: Colors.textSecondary,
   },
   locationInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 12,
+    backgroundColor: Colors.lightGray,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: Colors.gray,
   },
   locationInputText: {
     flex: 1,
-    fontSize: 16,
-    color: '#666666',
-    marginLeft: 12,
+    fontSize: FontSizes.md,
+    color: Colors.darkGray,
+    marginLeft: Spacing.sm,
   },
   locationInputTextSelected: {
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     fontWeight: '500',
   },
   openRideInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#FFF8E1',
-    borderRadius: 8,
-    marginBottom: 20,
+    padding: Spacing.sm,
+    backgroundColor: Colors.sectionBackground,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
   },
   openRideText: {
-    fontSize: 14,
-    color: '#F57C00',
-    marginLeft: 8,
+    fontSize: FontSizes.sm,
+    color: Colors.accent,
+    marginLeft: Spacing.sm,
     flex: 1,
+  },
+  costDisplay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.sectionBackground,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+  },
+  costLabel: {
+    fontSize: FontSizes.md,
+    fontWeight: '500',
+    color: Colors.textPrimary,
+  },
+  costValue: {
+    fontSize: FontSizes.lg,
+    fontWeight: 'bold',
+    color: Colors.primary,
   },
 
   // Delivery Dashboard Styles
@@ -1659,88 +1758,84 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   quickActionsContainer: {
-    padding: 20,
-    backgroundColor: '#FFFFFF',
+    padding: Spacing.lg,
+    backgroundColor: Colors.white,
   },
   primaryActionButton: {
-    backgroundColor: '#00C853',
+    backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 4,
-    shadowColor: '#00C853',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.md,
+    ...Shadows.medium,
   },
   primaryActionText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: Colors.white,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    marginLeft: 8,
+    marginLeft: Spacing.sm,
   },
   secondaryActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.sm,
   },
   secondaryActionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#F0F9F0',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.sectionBackground,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: Colors.primaryLight,
   },
   secondaryActionText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: 'bold',
-    color: '#00C853',
+    color: Colors.primary,
     marginLeft: 6,
   },
   recentSection: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
+    backgroundColor: Colors.white,
+    margin: Spacing.md,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    ...Shadows.small,
   },
   deliveryItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
-    elevation: 1,
+    borderColor: Colors.gray,
+    ...Shadows.small,
   },
   deliveryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   deliveryDescription: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     flex: 1,
   },
   deliveryStatus: {
-    fontSize: 12,
+    fontSize: FontSizes.xs,
     fontWeight: 'bold',
   },
   deliveryDetails: {
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   deliveryLocation: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   deliveryInfo: {
@@ -1749,144 +1844,144 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   trackingCode: {
-    fontSize: 12,
+    fontSize: FontSizes.xs,
     fontWeight: 'bold',
-    color: '#00C853',
+    color: Colors.primary,
   },
   deliveryDate: {
-    fontSize: 12,
-    color: '#666666',
+    fontSize: FontSizes.xs,
+    color: Colors.textSecondary,
   },
 
   // Driver Dashboard Styles
   statusCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 20,
-    padding: 16,
-    borderRadius: 12,
-    elevation: 2,
+    backgroundColor: Colors.white,
+    margin: Spacing.lg,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    ...Shadows.small,
   },
   statusHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   statusTitle: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   statusToggle: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#E8E8E8',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.gray,
   },
   statusToggleActive: {
-    backgroundColor: '#00C853',
+    backgroundColor: Colors.primary,
   },
   statusToggleText: {
-    fontSize: 12,
+    fontSize: FontSizes.xs,
     fontWeight: 'bold',
-    color: '#666666',
+    color: Colors.darkGray,
   },
   statusToggleTextActive: {
-    color: '#FFFFFF',
+    color: Colors.white,
   },
   statusDescription: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    marginHorizontal: 20,
-    borderRadius: 8,
-    elevation: 2,
+    backgroundColor: Colors.white,
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.sm,
+    ...Shadows.small,
     overflow: 'hidden',
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: Spacing.sm,
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
+    backgroundColor: Colors.lightGray,
   },
   tabActive: {
-    backgroundColor: '#00C853',
+    backgroundColor: Colors.primary,
   },
   tabText: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: 'bold',
-    color: '#666666',
+    color: Colors.darkGray,
   },
   tabTextActive: {
-    color: '#FFFFFF',
+    color: Colors.white,
   },
   servicesContent: {
     flex: 1,
-    padding: 20,
+    padding: Spacing.lg,
   },
   serviceItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
-    elevation: 2,
+    borderColor: Colors.gray,
+    ...Shadows.small,
   },
   serviceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: Spacing.sm,
   },
   serviceType: {
-    fontSize: 16,
+    fontSize: FontSizes.md,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   vehicleBadge: {
-    fontSize: 12,
+    fontSize: FontSizes.xs,
     fontWeight: 'bold',
-    color: '#00C853',
-    backgroundColor: '#F0F9F0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    color: Colors.primary,
+    backgroundColor: Colors.sectionBackground,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
   },
   serviceLocation: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   packageDesc: {
-    fontSize: 14,
-    color: '#666666',
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   passengerName: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: '500',
-    color: '#333333',
-    marginBottom: 12,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
   },
   recipientName: {
-    fontSize: 14,
+    fontSize: FontSizes.sm,
     fontWeight: '500',
-    color: '#333333',
-    marginBottom: 12,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
   },
   acceptButton: {
-    backgroundColor: '#00C853',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
     alignItems: 'center',
   },
   acceptButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: Colors.white,
+    fontSize: FontSizes.md,
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -1895,15 +1990,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: FontSizes.lg,
     fontWeight: 'bold',
-    color: '#999',
-    marginTop: 16,
-    marginBottom: 8,
+    color: Colors.mediumGray,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#999',
+    fontSize: FontSizes.sm,
+    color: Colors.mediumGray,
     textAlign: 'center',
   },
 });
