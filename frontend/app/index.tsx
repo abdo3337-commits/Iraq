@@ -1267,7 +1267,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#B8860B',
+    color: Colors.primary,
     marginBottom: 4,
   },
   logoSubtext: {
