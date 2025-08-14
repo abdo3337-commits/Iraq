@@ -690,13 +690,7 @@ async def register_with_otp(user_data: UserRegistration):
         del otp_storage[phone]
         
         # Generate JWT token
-        token_data = {
-            "user_id": user_id,
-            "phone": phone,
-            "user_type": user_data.user_type,
-            "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
-        }
-        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        token = create_access_token(user_id)
         
         # Return user data and token
         user_response = {
