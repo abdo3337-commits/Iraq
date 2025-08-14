@@ -949,7 +949,7 @@ async def request_payout(current_user: dict = Depends(get_current_user)):
         if current_user["user_type"] != "driver":
             raise HTTPException(status_code=403, detail="هذه الخدمة متاحة للسائقين فقط")
         
-        user_id = current_user["user_id"]
+        user_id = str(current_user["_id"])
         user = await db.users.find_one({"_id": ObjectId(user_id)})
         
         available_balance = user.get("available_balance", 0)
