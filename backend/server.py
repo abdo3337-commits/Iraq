@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -7,13 +7,14 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Dict
 import uuid
 from datetime import datetime, timedelta
 import hashlib
 import jwt
 from bson import ObjectId
 import json
+import asyncio
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -30,6 +31,33 @@ JWT_EXPIRATION_HOURS = 24
 
 # Security
 security = HTTPBearer()
+
+# WebSocket Connection Manager
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+    
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        self.active_connections[user_id] = websocket
+        print(f"User {user_id} connected to WebSocket")
+    
+    def disconnect(self, user_id: str):
+        if user_id in self.active_connections:
+            del self.active_connections[user_id]
+            print(f"User {user_id} disconnected from WebSocket")
+    
+    async def send_personal_message(self, message: dict, user_id: str):
+        if user_id in self.active_connections:
+            try:
+                await self.active_connections[user_id].send_text(json.dumps(message))
+                return True
+            except:
+                self.disconnect(user_id)
+                return False
+        return False
+
+manager = ConnectionManager()
 
 # Create the main app without a prefix
 app = FastAPI(title="Orange Bus API", description="Ride-sharing app for Anbar Governorate")
@@ -51,6 +79,11 @@ class RideStatus:
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
+
+class MessageType:
+    TEXT = "text"
+    LOCATION = "location"
+    SYSTEM = "system"
 
 # User Models
 class UserBase(BaseModel):
@@ -133,6 +166,31 @@ class RatingResponse(BaseModel):
     comment: Optional[str] = None
     created_at: datetime
 
+# Chat Models
+class MessageCreate(BaseModel):
+    ride_id: str
+    message_type: Literal["text", "location", "system"] = "text"
+    content: str
+    location_data: Optional[Location] = None
+
+class MessageResponse(BaseModel):
+    id: str
+    ride_id: str
+    sender_id: str
+    sender_name: str
+    sender_type: str
+    message_type: str
+    content: str
+    location_data: Optional[Location] = None
+    timestamp: datetime
+    is_read: bool = False
+
+class ChatResponse(BaseModel):
+    ride_id: str
+    participants: List[UserResponse]
+    messages: List[MessageResponse]
+    unread_count: int = 0
+
 # =====================================================
 # UTILITY FUNCTIONS
 # =====================================================
@@ -169,6 +227,27 @@ def serialize_user(user: dict) -> dict:
     if "password" in user:
         del user["password"]
     return user
+
+def serialize_message(message: dict) -> dict:
+    message["id"] = str(message["_id"])
+    del message["_id"]
+    return message
+
+# =====================================================
+# WEBSOCKET ENDPOINT
+# =====================================================
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            # Keep connection alive
+            data = await websocket.receive_text()
+            # Echo back to confirm connection
+            await websocket.send_text(f"Connected: {user_id}")
+    except WebSocketDisconnect:
+        manager.disconnect(user_id)
 
 # =====================================================
 # AUTHENTICATION ENDPOINTS
@@ -388,6 +467,22 @@ async def accept_ride(ride_id: str, current_user: dict = Depends(get_current_use
         }
     )
     
+    # Send system message to chat
+    await create_system_message(
+        ride_id, 
+        f"تم قبول الرحلة من قبل السائق {current_user['name']}"
+    )
+    
+    # Notify passenger via WebSocket
+    passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+    if passenger:
+        await manager.send_personal_message({
+            "type": "ride_accepted",
+            "ride_id": ride_id,
+            "driver_name": current_user["name"],
+            "message": "تم قبول رحلتك!"
+        }, str(passenger["_id"]))
+    
     return {"message": "Ride accepted successfully"}
 
 @api_router.put("/rides/{ride_id}/status")
@@ -416,6 +511,26 @@ async def update_ride_status(
         {"$set": update_data}
     )
     
+    # Send system message
+    status_messages = {
+        RideStatus.IN_PROGRESS: "بدأت الرحلة",
+        RideStatus.COMPLETED: "تم إنهاء الرحلة بنجاح",
+        RideStatus.CANCELLED: "تم إلغاء الرحلة"
+    }
+    
+    if status in status_messages:
+        await create_system_message(ride_id, status_messages[status])
+    
+    # Notify other party via WebSocket
+    other_user_id = ride["passenger_id"] if current_user["user_type"] == "driver" else ride.get("driver_id")
+    if other_user_id:
+        await manager.send_personal_message({
+            "type": "ride_status_updated",
+            "ride_id": ride_id,
+            "status": status,
+            "message": status_messages.get(status, f"تم تحديث حالة الرحلة إلى {status}")
+        }, other_user_id)
+    
     return {"message": "Ride status updated successfully"}
 
 @api_router.get("/rides/my-rides", response_model=List[RideResponse])
@@ -440,6 +555,156 @@ async def get_my_rides(current_user: dict = Depends(get_current_user)):
         result.append(RideResponse(**ride_data))
     
     return result
+
+# =====================================================
+# CHAT SYSTEM ENDPOINTS
+# =====================================================
+
+async def create_system_message(ride_id: str, content: str):
+    """Create a system message for a ride"""
+    message_doc = {
+        "ride_id": ride_id,
+        "sender_id": "system",
+        "sender_name": "النظام",
+        "sender_type": "system",
+        "message_type": MessageType.SYSTEM,
+        "content": content,
+        "location_data": None,
+        "timestamp": datetime.utcnow(),
+        "is_read": False
+    }
+    
+    await db.messages.insert_one(message_doc)
+
+@api_router.post("/chat/send", response_model=MessageResponse)
+async def send_message(
+    message: MessageCreate,
+    current_user: dict = Depends(get_current_user)
+):
+    # Verify user is part of the ride
+    ride = await db.rides.find_one({"_id": ObjectId(message.ride_id)})
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    
+    user_id = str(current_user["_id"])
+    if user_id not in [ride["passenger_id"], ride.get("driver_id")]:
+        raise HTTPException(status_code=403, detail="Not authorized to send messages in this chat")
+    
+    # Create message document
+    message_doc = {
+        "ride_id": message.ride_id,
+        "sender_id": user_id,
+        "sender_name": current_user["name"],
+        "sender_type": current_user["user_type"],
+        "message_type": message.message_type,
+        "content": message.content,
+        "location_data": message.location_data.dict() if message.location_data else None,
+        "timestamp": datetime.utcnow(),
+        "is_read": False
+    }
+    
+    result = await db.messages.insert_one(message_doc)
+    message_doc["_id"] = result.inserted_id
+    
+    # Prepare response
+    message_response = MessageResponse(**serialize_message(message_doc))
+    
+    # Send to other participant via WebSocket
+    other_user_id = ride["passenger_id"] if user_id == ride.get("driver_id") else ride.get("driver_id")
+    if other_user_id:
+        await manager.send_personal_message({
+            "type": "new_message",
+            "message": serialize_message(message_doc)
+        }, other_user_id)
+    
+    return message_response
+
+@api_router.get("/chat/{ride_id}", response_model=ChatResponse)
+async def get_chat(ride_id: str, current_user: dict = Depends(get_current_user)):
+    # Verify user is part of the ride
+    ride = await db.rides.find_one({"_id": ObjectId(ride_id)})
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found")
+    
+    user_id = str(current_user["_id"])
+    if user_id not in [ride["passenger_id"], ride.get("driver_id")]:
+        raise HTTPException(status_code=403, detail="Not authorized to view this chat")
+    
+    # Get all messages for this ride
+    messages = await db.messages.find({"ride_id": ride_id}).sort("timestamp", 1).to_list(1000)
+    
+    # Get participants info
+    participants = []
+    passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+    participants.append(UserResponse(**serialize_user(passenger)))
+    
+    if ride.get("driver_id"):
+        driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
+        participants.append(UserResponse(**serialize_user(driver)))
+    
+    # Count unread messages
+    unread_count = await db.messages.count_documents({
+        "ride_id": ride_id,
+        "sender_id": {"$ne": user_id},
+        "is_read": False
+    })
+    
+    # Mark messages as read
+    await db.messages.update_many(
+        {"ride_id": ride_id, "sender_id": {"$ne": user_id}},
+        {"$set": {"is_read": True}}
+    )
+    
+    return ChatResponse(
+        ride_id=ride_id,
+        participants=participants,
+        messages=[MessageResponse(**serialize_message(msg)) for msg in messages],
+        unread_count=unread_count
+    )
+
+@api_router.get("/chat/my-chats", response_model=List[ChatResponse])
+async def get_my_chats(current_user: dict = Depends(get_current_user)):
+    user_id = str(current_user["_id"])
+    
+    # Get rides where user is participant
+    if current_user["user_type"] == "passenger":
+        rides = await db.rides.find({"passenger_id": user_id, "driver_id": {"$ne": None}}).sort("created_at", -1).to_list(50)
+    else:
+        rides = await db.rides.find({"driver_id": user_id}).sort("created_at", -1).to_list(50)
+    
+    chats = []
+    for ride in rides:
+        # Get last message
+        last_message = await db.messages.find_one(
+            {"ride_id": str(ride["_id"])},
+            sort=[("timestamp", -1)]
+        )
+        
+        if last_message:  # Only include chats with messages
+            # Get participants
+            participants = []
+            passenger = await db.users.find_one({"_id": ObjectId(ride["passenger_id"])})
+            participants.append(UserResponse(**serialize_user(passenger)))
+            
+            if ride.get("driver_id"):
+                driver = await db.users.find_one({"_id": ObjectId(ride["driver_id"])})
+                participants.append(UserResponse(**serialize_user(driver)))
+            
+            # Count unread messages
+            unread_count = await db.messages.count_documents({
+                "ride_id": str(ride["_id"]),
+                "sender_id": {"$ne": user_id},
+                "is_read": False
+            })
+            
+            chats.append(ChatResponse(
+                ride_id=str(ride["_id"]),
+                participants=participants,
+                messages=[MessageResponse(**serialize_message(last_message))],
+                unread_count=unread_count
+            ))
+    
+    return chats
 
 # =====================================================
 # RATING SYSTEM ENDPOINTS
