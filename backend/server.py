@@ -595,13 +595,7 @@ async def verify_otp(otp_verification: OTPVerification):
         del otp_storage[phone]
         
         # Generate JWT token
-        token_data = {
-            "user_id": str(user["_id"]),
-            "phone": user["phone"],
-            "user_type": user["user_type"],
-            "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
-        }
-        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        token = create_access_token(str(user["_id"]))
         
         # Return user data and token
         user_data = {
