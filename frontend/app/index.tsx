@@ -1208,7 +1208,11 @@ const DeliveryDashboard: React.FC<{
 };
 
 // Driver Dashboard with both services (unchanged but with new colors)
-const DriverDashboard: React.FC = () => {
+const DriverDashboard: React.FC<{
+  onProfilePress?: () => void;
+  onHistoryPress?: () => void;
+  onSettingsPress?: () => void;
+}> = ({ onProfilePress, onHistoryPress, onSettingsPress }) => {
   const { user } = useAuth();
   const [isOnline, setIsOnline] = useState(false);
   const [currentLocation, setCurrentLocation] = useState<LocationData | null>(null);
