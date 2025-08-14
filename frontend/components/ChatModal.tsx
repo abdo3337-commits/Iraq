@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
+import { Colors, Spacing, BorderRadius, FontSizes, Shadows } from './styles';
 
 const { width, height } = Dimensions.get('window');
 
