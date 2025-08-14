@@ -283,22 +283,40 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpModalVisible, setOtpModalVisible] = useState(false);
+  const [useOTP, setUseOTP] = useState(true);
   const { login } = useAuth();
 
   const handleLogin = async () => {
-    if (!phone.trim() || !password.trim()) {
-      Alert.alert('خطأ', 'يرجى ملء جميع الحقول');
+    if (!phone.trim()) {
+      Alert.alert('خطأ', 'يرجى إدخل رقم الهاتف');
       return;
     }
 
-    try {
-      setLoading(true);
-      await login(phone, password);
-    } catch (error: any) {
-      Alert.alert('خطأ في تسجيل الدخول', error.message);
-    } finally {
-      setLoading(false);
+    if (useOTP) {
+      // Use OTP login
+      setOtpModalVisible(true);
+    } else {
+      // Use password login (fallback)
+      if (!password.trim()) {
+        Alert.alert('خطأ', 'يرجى إدخل كلمة المرور');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        await login(phone, password);
+      } catch (error: any) {
+        Alert.alert('خطأ في تسجيل الدخول', error.message);
+      } finally {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleOTPSuccess = (userData: any) => {
+    setOtpModalVisible(false);
+    // User is already logged in via OTP verification
   };
 
   return (
@@ -311,6 +329,36 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
             resizeMode="contain"
           />
           <Text style={styles.authTitle}>تسجيل الدخول</Text>
+        </View>
+
+        {/* Login Method Toggle */}
+        <View style={styles.loginMethodContainer}>
+          <TouchableOpacity
+            style={[styles.methodButton, useOTP && styles.methodButtonActive]}
+            onPress={() => setUseOTP(true)}
+          >
+            <Ionicons 
+              name="phone-portrait" 
+              size={20} 
+              color={useOTP ? Colors.white : Colors.primary} 
+            />
+            <Text style={[styles.methodButtonText, useOTP && styles.methodButtonTextActive]}>
+              رمز التحقق
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.methodButton, !useOTP && styles.methodButtonActive]}
+            onPress={() => setUseOTP(false)}
+          >
+            <Ionicons 
+              name="lock-closed" 
+              size={20} 
+              color={!useOTP ? Colors.white : Colors.primary} 
+            />
+            <Text style={[styles.methodButtonText, !useOTP && styles.methodButtonTextActive]}>
+              كلمة المرور
+            </Text>
+          </TouchableOpacity>
         </View>
         
         <View style={styles.authForm}>
@@ -326,17 +374,19 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed" size={20} color={Colors.darkGray} style={styles.inputIcon} />
-            <TextInput
-              style={styles.textInput}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="كلمة المرور"
-              secureTextEntry
-              placeholderTextColor={Colors.mediumGray}
-            />
-          </View>
+          {!useOTP && (
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed" size={20} color={Colors.darkGray} style={styles.inputIcon} />
+              <TextInput
+                style={styles.textInput}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="كلمة المرور"
+                secureTextEntry
+                placeholderTextColor={Colors.mediumGray}
+              />
+            </View>
+          )}
 
           <TouchableOpacity 
             style={[styles.primaryButton, loading && styles.primaryButtonDisabled]} 
@@ -346,7 +396,9 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
             {loading ? (
               <ActivityIndicator color={Colors.white} />
             ) : (
-              <Text style={styles.primaryButtonText}>تسجيل الدخول</Text>
+              <Text style={styles.primaryButtonText}>
+                {useOTP ? 'إرسال رمز التحقق' : 'تسجيل الدخول'}
+              </Text>
             )}
           </TouchableOpacity>
 
@@ -357,6 +409,15 @@ const LoginScreen: React.FC<{ onSwitchToRegister: () => void }> = ({ onSwitchToR
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* OTP Verification Modal */}
+      <OTPVerification
+        visible={otpModalVisible}
+        onClose={() => setOtpModalVisible(false)}
+        phoneNumber={phone}
+        onVerificationSuccess={handleOTPSuccess}
+        isRegistration={false}
+      />
     </KeyboardAvoidingView>
   );
 };
