@@ -123,7 +123,7 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED: All user management endpoints working perfectly. ✅ Passenger/Driver registration with unique phone validation ✅ JWT authentication and login system ✅ Profile updates and driver-specific info management ✅ Authorization controls preventing unauthorized access ✅ Arabic name support and Iraqi phone numbers ✅ Password hashing and security measures. All 21 test cases passed with 100% success rate."
 
-  - task: "Ride Management System"
+  - task: "Advanced Ride Management System"
     implemented: true
     working: true
     file: "server.py"
@@ -140,6 +140,57 @@ backend:
         - working: true
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED: Full ride management flow working perfectly. ✅ Passenger ride requests with Iraqi locations (Anbar University to Ramadi center) ✅ Driver viewing available rides ✅ Ride acceptance by drivers ✅ Status updates (requested → accepted → in_progress → completed) ✅ Ride history for both passengers and drivers ✅ Proper authorization controls ✅ Fare calculation and ride completion. Complete ride lifecycle tested successfully."
+        - working: true
+          agent: "testing"
+          comment: "ADVANCED FEATURES TESTING COMPLETED: ✅ Immediate VIP rides with premium pricing (3000 IQD base fare) ✅ Scheduled rides (pre-booking) with future time validation ✅ Open rides without specific destination ✅ Vehicle type selection (Standard/VIP) with different pricing tiers ✅ Complete ride workflow from request to completion and rating ✅ Arabic language support in ride notes and locations. All advanced ride features working perfectly."
+
+  - task: "Comprehensive Delivery Service System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: "NA"
+          agent: "testing"
+          comment: "COMPREHENSIVE DELIVERY SYSTEM TESTING COMPLETED: ✅ Complete delivery workflow from request to completion ✅ Package size options (small/medium/large) with appropriate pricing ✅ Package tracking with unique tracking codes ✅ Driver delivery capabilities and package size restrictions ✅ Delivery status updates (requested → accepted → picked_up → in_transit → delivered) ✅ Cost calculations based on package size, distance, and special requirements ✅ Fragile package handling and signature requirements ✅ Insurance calculations for declared value ✅ Arabic language support in delivery notes. Full delivery service operational."
+
+  - task: "Vehicle Types & Pricing System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "VEHICLE PRICING SYSTEM TESTING COMPLETED: ✅ Standard vehicle type (1000 IQD base fare, 500 IQD/km) ✅ VIP vehicle type (2000 IQD base fare, 800 IQD/km) ✅ Dynamic pricing calculations based on distance and time ✅ Minimum fare enforcement ✅ Booking fees for scheduled rides ✅ Arabic descriptions and feature lists ✅ Driver vehicle type configuration. Pricing system fully functional."
+
+  - task: "Package Size & Delivery Pricing System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "PACKAGE PRICING SYSTEM TESTING COMPLETED: ✅ Small packages (1500 IQD base, max 5kg) ✅ Medium packages (2500 IQD base, max 15kg) ✅ Large packages (4000 IQD base, max 30kg) ✅ Distance-based pricing calculations ✅ Additional fees for fragile items and signature requirements ✅ Insurance calculations for declared value ✅ Size multipliers and minimum cost enforcement ✅ Arabic package descriptions. Delivery pricing system fully operational."
+
+  - task: "Driver Capabilities System"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "DRIVER CAPABILITIES TESTING COMPLETED: ✅ Driver profile setup with vehicle information ✅ VIP vehicle configuration with premium amenities ✅ Delivery acceptance settings ✅ Maximum package size capabilities (small/medium/large) ✅ Delivery equipment tracking ✅ Availability toggle functionality ✅ Driver authorization for different service types ✅ Arabic support in vehicle descriptions. Driver capability system fully functional."
 
   - task: "Real-time Communication API"
     implemented: true
@@ -159,7 +210,7 @@ backend:
           agent: "testing"
           comment: "COMPREHENSIVE TESTING COMPLETED: WebSocket endpoint implemented correctly but failing due to infrastructure issues (502 Bad Gateway from proxy/load balancer). ✅ Chat system API endpoints working perfectly ✅ Message sending and retrieval for both rides and deliveries ✅ System messages for status updates ✅ Arabic language support in messages ✅ Unified chat for both services. WebSocket connection blocked by external infrastructure, not code issues."
 
-  - task: "Rating System API"
+  - task: "Unified Rating System API"
     implemented: true
     working: true
     file: "server.py"
@@ -173,6 +224,9 @@ backend:
         - working: true
           agent: "testing"
           comment: "TESTING COMPLETED: Rating system working perfectly. ✅ Post-ride rating creation with 1-5 star system ✅ Arabic comments support ✅ Automatic user rating average calculation ✅ Duplicate rating prevention ✅ Proper authorization (only ride participants can rate). Rating system fully functional."
+        - working: true
+          agent: "testing"
+          comment: "UNIFIED RATING SYSTEM TESTING COMPLETED: ✅ Rating system for both rides and deliveries ✅ Service type validation (ride/delivery) ✅ Complete workflow from service completion to rating ✅ Arabic language support in comments ✅ Automatic average rating calculation ✅ Proper authorization controls ✅ 1-5 star rating system. Unified rating system fully operational."
 
 frontend:
   - task: "Authentication Screens"
