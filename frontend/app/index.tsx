@@ -546,10 +546,7 @@ const Dashboard: React.FC = () => {
     return (
       <>
         <ServiceSelection onServiceSelect={setSelectedService} />
-        <NotificationSystem 
-          onNotificationPress={handleNotificationPress}
-          onActionPress={handleNotificationAction}
-        />
+        {/* NotificationSystem will be added later */}
         
         {/* Modals */}
         <ProfileScreen
