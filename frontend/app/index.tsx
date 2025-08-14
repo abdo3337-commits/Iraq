@@ -460,7 +460,7 @@ const RegisterScreen: React.FC<{ onSwitchToLogin: () => void }> = ({ onSwitchToL
   );
 };
 
-// Passenger Dashboard with Interactive Map
+// Passenger Dashboard with Interactive Map and Chat
 const PassengerDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [pickupLocation, setPickupLocation] = useState<LocationData | null>(null);
@@ -469,10 +469,24 @@ const PassengerDashboard: React.FC = () => {
   const [locationModalVisible, setLocationModalVisible] = useState(false);
   const [modalType, setModalType] = useState<'pickup' | 'destination'>('pickup');
   const [rideRequested, setRideRequested] = useState(false);
+  const [myRides, setMyRides] = useState([]);
+  const [chatModalVisible, setChatModalVisible] = useState(false);
+  const [selectedRideId, setSelectedRideId] = useState<string | null>(null);
+  const [showRidesList, setShowRidesList] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
+    loadMyRides();
   }, []);
+
+  const loadMyRides = async () => {
+    try {
+      const rides = await apiCall('/rides/my-rides');
+      setMyRides(rides);
+    } catch (error) {
+      console.error('Error loading rides:', error);
+    }
+  };
 
   const getCurrentLocation = async () => {
     try {
@@ -520,10 +534,16 @@ const PassengerDashboard: React.FC = () => {
       });
 
       setRideRequested(true);
+      loadMyRides(); // Refresh rides list
       Alert.alert('تم بنجاح', 'تم طلب الرحلة بنجاح! سيتم إشعارك عند قبول السائق للرحلة');
     } catch (error: any) {
       Alert.alert('خطأ', error.message);
     }
+  };
+
+  const openChat = (rideId: string) => {
+    setSelectedRideId(rideId);
+    setChatModalVisible(true);
   };
 
   const mapMarkers = [
@@ -545,6 +565,61 @@ const PassengerDashboard: React.FC = () => {
     }] : []),
   ];
 
+  const renderRideItem = ({ item }: { item: any }) => (
+    <TouchableOpacity 
+      style={styles.rideItem}
+      onPress={() => item.driver_id && openChat(item.id)}
+    >
+      <View style={styles.rideItemHeader}>
+        <Text style={styles.rideDestination}>
+          إلى: {item.destination_location.address}
+        </Text>
+        <Text style={[styles.rideStatus, getStatusStyle(item.status)]}>
+          {getStatusText(item.status)}
+        </Text>
+      </View>
+      <Text style={styles.rideTime}>
+        {new Date(item.created_at).toLocaleDateString('ar-IQ')}
+      </Text>
+      {item.driver_info && (
+        <View style={styles.driverInfo}>
+          <Text style={styles.driverName}>السائق: {item.driver_info.name}</Text>
+          {item.driver_id && (
+            <TouchableOpacity 
+              style={styles.chatButton}
+              onPress={() => openChat(item.id)}
+            >
+              <Ionicons name="chatbubble" size={16} color="#00C853" />
+              <Text style={styles.chatButtonText}>محادثة</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
+  const getStatusText = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'requested': 'في انتظار السائق',
+      'accepted': 'تم قبول الرحلة',
+      'in_progress': 'جارية',
+      'completed': 'مكتملة',
+      'cancelled': 'ملغية'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusStyle = (status: string) => {
+    const statusStyles: { [key: string]: any } = {
+      'requested': { color: '#FF9800' },
+      'accepted': { color: '#2196F3' },
+      'in_progress': { color: '#00C853' },
+      'completed': { color: '#4CAF50' },
+      'cancelled': { color: '#F44336' }
+    };
+    return statusStyles[status] || {};
+  };
+
   return (
     <View style={styles.dashboardContainer}>
       {/* Header */}
@@ -553,78 +628,114 @@ const PassengerDashboard: React.FC = () => {
           <Text style={styles.greeting}>مرحباً</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={40} color="#00C853" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Interactive Map */}
-      <View style={styles.mapContainer}>
-        <MapView
-          currentLocation={currentLocation}
-          markers={mapMarkers}
-          showUserLocation={true}
-          height={height * 0.5}
-        />
-      </View>
-
-      {/* Ride Options */}
-      <View style={styles.rideOptionsContainer}>
-        <Text style={styles.sectionTitle}>إلى أين تريد الذهاب؟</Text>
-        
-        {/* Pickup Location */}
-        <TouchableOpacity 
-          style={styles.locationInput}
-          onPress={() => {
-            setModalType('pickup');
-            setLocationModalVisible(true);
-          }}
-        >
-          <Ionicons name="radio-button-on" size={20} color="#2196F3" />
-          <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
-            {pickupLocation ? pickupLocation.address : 'نقطة الانطلاق'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Destination Location */}
-        <TouchableOpacity 
-          style={styles.locationInput}
-          onPress={() => {
-            setModalType('destination');
-            setLocationModalVisible(true);
-          }}
-        >
-          <Ionicons name="location" size={20} color="#FF4444" />
-          <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
-            {destinationLocation ? destinationLocation.address : 'اختر الوجهة'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <Ionicons name="home" size={24} color="#00C853" />
-            <Text style={styles.quickActionText}>المنزل</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity 
+            style={styles.ridesListButton}
+            onPress={() => setShowRidesList(!showRidesList)}
+          >
+            <Ionicons name="list" size={24} color="#00C853" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <Ionicons name="business" size={24} color="#00C853" />
-            <Text style={styles.quickActionText}>العمل</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.quickActionButton}>
-            <Ionicons name="time" size={24} color="#00C853" />
-            <Text style={styles.quickActionText}>آخر رحلة</Text>
+          <TouchableOpacity style={styles.profileButton}>
+            <Ionicons name="person-circle" size={40} color="#00C853" />
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity 
-          style={[styles.primaryButton, rideRequested && styles.primaryButtonDisabled]}
-          onPress={handleRequestRide}
-          disabled={rideRequested}
-        >
-          <Text style={styles.primaryButtonText}>
-            {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
-          </Text>
-        </TouchableOpacity>
       </View>
+
+      {/* Rides List Modal */}
+      <Modal
+        visible={showRidesList}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setShowRidesList(false)}>
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>رحلاتي</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          <FlatList
+            data={myRides}
+            renderItem={renderRideItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.ridesListContent}
+            showsVerticalScrollIndicator={false}
+          />
+        </SafeAreaView>
+      </Modal>
+
+      {!showRidesList && (
+        <>
+          {/* Interactive Map */}
+          <View style={styles.mapContainer}>
+            <MapView
+              currentLocation={currentLocation}
+              markers={mapMarkers}
+              showUserLocation={true}
+              height={height * 0.5}
+            />
+          </View>
+
+          {/* Ride Options */}
+          <View style={styles.rideOptionsContainer}>
+            <Text style={styles.sectionTitle}>إلى أين تريد الذهاب؟</Text>
+            
+            {/* Pickup Location */}
+            <TouchableOpacity 
+              style={styles.locationInput}
+              onPress={() => {
+                setModalType('pickup');
+                setLocationModalVisible(true);
+              }}
+            >
+              <Ionicons name="radio-button-on" size={20} color="#2196F3" />
+              <Text style={[styles.locationInputText, pickupLocation && styles.locationInputTextSelected]}>
+                {pickupLocation ? pickupLocation.address : 'نقطة الانطلاق'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Destination Location */}
+            <TouchableOpacity 
+              style={styles.locationInput}
+              onPress={() => {
+                setModalType('destination');
+                setLocationModalVisible(true);
+              }}
+            >
+              <Ionicons name="location" size={20} color="#FF4444" />
+              <Text style={[styles.locationInputText, destinationLocation && styles.locationInputTextSelected]}>
+                {destinationLocation ? destinationLocation.address : 'اختر الوجهة'}
+              </Text>
+            </TouchableOpacity>
+
+            <View style={styles.quickActions}>
+              <TouchableOpacity style={styles.quickActionButton}>
+                <Ionicons name="home" size={24} color="#00C853" />
+                <Text style={styles.quickActionText}>المنزل</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickActionButton}>
+                <Ionicons name="business" size={24} color="#00C853" />
+                <Text style={styles.quickActionText}>العمل</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickActionButton}>
+                <Ionicons name="time" size={24} color="#00C853" />
+                <Text style={styles.quickActionText}>آخر رحلة</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.primaryButton, rideRequested && styles.primaryButtonDisabled]}
+              onPress={handleRequestRide}
+              disabled={rideRequested}
+            >
+              <Text style={styles.primaryButtonText}>
+                {rideRequested ? 'تم طلب الرحلة' : 'طلب رحلة'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       {/* Location Selection Modal */}
       <LocationSearchModal
@@ -634,6 +745,16 @@ const PassengerDashboard: React.FC = () => {
         title={modalType === 'pickup' ? 'اختر نقطة الانطلاق' : 'اختر الوجهة'}
         currentLocation={currentLocation}
       />
+
+      {/* Chat Modal */}
+      {selectedRideId && (
+        <ChatModal
+          visible={chatModalVisible}
+          onClose={() => setChatModalVisible(false)}
+          rideId={selectedRideId}
+          currentUser={user!}
+        />
+      )}
     </View>
   );
 };
