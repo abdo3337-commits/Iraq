@@ -39,14 +39,14 @@ interface NotificationSystemProps {
   onActionPress?: (action: string, notification: NotificationData) => void;
 }
 
-// Configure notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+// Configure notifications placeholder
+// Notifications.setNotificationHandler({
+//   handleNotification: async () => ({
+//     shouldShowAlert: true,
+//     shouldPlaySound: true,
+//     shouldSetBadge: false,
+//   }),
+// });
 
 const NotificationSystem: React.FC<NotificationSystemProps> = ({
   onNotificationPress,
@@ -57,59 +57,26 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({
   const [isVisible, setIsVisible] = useState(false);
   
   const animatedValue = useRef(new Animated.Value(-200)).current;
-  const notificationListener = useRef<any>();
-  const responseListener = useRef<any>();
+  // const notificationListener = useRef<any>();
+  // const responseListener = useRef<any>();
 
   useEffect(() => {
     setupNotifications();
     loadStoredNotifications();
 
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
+    // return () => {
+    //   Notifications.removeNotificationSubscription(notificationListener.current);
+    //   Notifications.removeNotificationSubscription(responseListener.current);
+    // };
   }, []);
 
   const setupNotifications = async () => {
-    // Request permissions
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== 'granted') {
-      console.log('Notification permissions not granted');
-      return;
-    }
-
-    // Get push token
-    try {
-      const token = (await Notifications.getExpoPushTokenAsync()).data;
-      await AsyncStorage.setItem('push_token', token);
-      
-      // Send token to backend
-      await sendTokenToBackend(token);
-    } catch (error) {
-      console.error('Error getting push token:', error);
-    }
-
-    // Listen for notifications
-    notificationListener.current = Notifications.addNotificationReceivedListener(handleNotificationReceived);
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
+    // Placeholder for notifications setup
+    console.log('Notifications setup placeholder');
   };
 
   const sendTokenToBackend = async (token: string) => {
-    try {
-      const authToken = await AsyncStorage.getItem('auth_token');
-      const API_BASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_BACKEND_URL || 'https://aburide.preview.emergentagent.com';
-      
-      await fetch(`${API_BASE_URL}/api/notifications/register-token`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ push_token: token }),
-      });
-    } catch (error) {
-      console.error('Error sending token to backend:', error);
-    }
+    // Placeholder
   };
 
   const loadStoredNotifications = async () => {
