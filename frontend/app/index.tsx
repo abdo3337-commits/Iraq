@@ -866,9 +866,17 @@ const PassengerDashboard: React.FC<{
           <Text style={styles.headerTitle}>طلب رحلة</Text>
           <Text style={styles.userName}>{user?.name}</Text>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={32} color={Colors.primary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.headerActionButton} onPress={onHistoryPress}>
+            <Ionicons name="time" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerActionButton} onPress={onSettingsPress}>
+            <Ionicons name="settings" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.profileButton} onPress={onProfilePress}>
+            <Ionicons name="person-circle" size={32} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Interactive Map */}
