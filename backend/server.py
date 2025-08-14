@@ -521,7 +521,469 @@ async def websocket_endpoint(websocket: WebSocket, user_id: str):
         manager.disconnect(user_id)
 
 # =====================================================
-# AUTHENTICATION ENDPOINTS
+# AUTH ENDPOINTS WITH OTP
+# =====================================================
+
+@api_router.post("/auth/send-otp")
+async def send_otp(otp_request: OTPRequest):
+    """Send OTP to phone number"""
+    try:
+        phone = otp_request.phone
+        action = otp_request.action
+        
+        # Check if user exists for login
+        if action == "login":
+            user = await db.users.find_one({"phone": phone})
+            if not user:
+                raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+        
+        # Generate and store OTP
+        otp = generate_otp()
+        otp_storage[phone] = {
+            "otp": otp,
+            "created_at": datetime.utcnow(),
+            "action": action,
+            "attempts": 0
+        }
+        
+        # In production, send OTP via SMS service
+        # For development, return OTP in response
+        return {
+            "message": "تم إرسال رمز التحقق بنجاح",
+            "otp": otp if os.getenv("ENVIRONMENT") == "development" else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في إرسال رمز التحقق: {str(e)}")
+
+@api_router.post("/auth/verify-otp")
+async def verify_otp(otp_verification: OTPVerification):
+    """Verify OTP for login"""
+    try:
+        phone = otp_verification.phone
+        otp = otp_verification.otp
+        
+        # Check if OTP exists
+        if phone not in otp_storage:
+            raise HTTPException(status_code=404, detail="رمز التحقق غير موجود")
+        
+        stored_otp = otp_storage[phone]
+        
+        # Check if OTP is expired (10 minutes)
+        if datetime.utcnow() - stored_otp["created_at"] > timedelta(minutes=10):
+            del otp_storage[phone]
+            raise HTTPException(status_code=400, detail="رمز التحقق منتهي الصلاحية")
+        
+        # Check OTP attempts
+        if stored_otp["attempts"] >= 3:
+            del otp_storage[phone]
+            raise HTTPException(status_code=400, detail="تم تجاوز عدد المحاولات المسموح")
+        
+        # Verify OTP
+        if stored_otp["otp"] != otp:
+            stored_otp["attempts"] += 1
+            raise HTTPException(status_code=400, detail="رمز التحقق غير صحيح")
+        
+        # Find user
+        user = await db.users.find_one({"phone": phone})
+        if not user:
+            raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+        
+        # Clean up OTP
+        del otp_storage[phone]
+        
+        # Generate JWT token
+        token_data = {
+            "user_id": str(user["_id"]),
+            "phone": user["phone"],
+            "user_type": user["user_type"],
+            "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
+        }
+        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        # Return user data and token
+        user_data = {
+            "id": str(user["_id"]),
+            "name": user["name"],
+            "phone": user["phone"],
+            "email": user.get("email"),
+            "user_type": user["user_type"],
+            "rating": user.get("rating", 0),
+            "total_rides": user.get("total_rides", 0),
+            "total_deliveries": user.get("total_deliveries", 0),
+            "is_active": user.get("is_active", True)
+        }
+        
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": user_data
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في التحقق: {str(e)}")
+
+@api_router.post("/auth/register")
+async def register_with_otp(user_data: UserRegistration):
+    """Register user with OTP verification"""
+    try:
+        phone = user_data.phone
+        otp = user_data.otp
+        
+        # Verify OTP first
+        if phone not in otp_storage:
+            raise HTTPException(status_code=404, detail="رمز التحقق غير موجود")
+        
+        stored_otp = otp_storage[phone]
+        
+        # Check if OTP is for registration
+        if stored_otp["action"] != "register":
+            raise HTTPException(status_code=400, detail="رمز التحقق غير صالح للتسجيل")
+        
+        # Check if OTP is expired
+        if datetime.utcnow() - stored_otp["created_at"] > timedelta(minutes=10):
+            del otp_storage[phone]
+            raise HTTPException(status_code=400, detail="رمز التحقق منتهي الصلاحية")
+        
+        # Verify OTP
+        if stored_otp["otp"] != otp:
+            raise HTTPException(status_code=400, detail="رمز التحقق غير صحيح")
+        
+        # Check if user already exists
+        existing_user = await db.users.find_one({"phone": phone})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="رقم الهاتف مسجل مسبقاً")
+        
+        # Hash password
+        hashed_password = hashlib.sha256(user_data.password.encode()).hexdigest()
+        
+        # Create new user
+        new_user = {
+            "name": user_data.name,
+            "phone": phone,
+            "email": user_data.email,
+            "password": hashed_password,
+            "user_type": user_data.user_type,
+            "rating": 0,
+            "total_rides": 0,
+            "total_deliveries": 0,
+            "is_active": True,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+        
+        # Add driver-specific fields
+        if user_data.user_type == "driver":
+            new_user.update({
+                "is_available": False,
+                "current_location": None,
+                "vehicle_info": None,
+                "documents_status": "pending",
+                "total_earnings": 0,
+                "pending_balance": 0,
+                "available_balance": 0
+            })
+        
+        # Insert user
+        result = await db.users.insert_one(new_user)
+        user_id = str(result.inserted_id)
+        
+        # Clean up OTP
+        del otp_storage[phone]
+        
+        # Generate JWT token
+        token_data = {
+            "user_id": user_id,
+            "phone": phone,
+            "user_type": user_data.user_type,
+            "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS)
+        }
+        token = jwt.encode(token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        
+        # Return user data and token
+        user_response = {
+            "id": user_id,
+            "name": user_data.name,
+            "phone": phone,
+            "email": user_data.email,
+            "user_type": user_data.user_type,
+            "rating": 0,
+            "total_rides": 0,
+            "total_deliveries": 0,
+            "is_active": True
+        }
+        
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": user_response
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في التسجيل: {str(e)}")
+
+# =====================================================
+# DRIVER ENDPOINTS
+# =====================================================
+
+@api_router.post("/drivers/upload-document")
+async def upload_document(
+    document_type: str = None,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Upload driver document"""
+    try:
+        if current_user["user_type"] != "driver":
+            raise HTTPException(status_code=403, detail="هذه الخدمة متاحة للسائقين فقط")
+        
+        # Validate document type
+        valid_types = ["national_id", "driving_license", "vehicle_registration", "insurance", "vehicle_photos"]
+        if document_type not in valid_types:
+            raise HTTPException(status_code=400, detail="نوع المستند غير صالح")
+        
+        # Read file content
+        file_content = await file.read()
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        
+        # Generate unique filename
+        unique_filename = f"{current_user['user_id']}_{document_type}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        
+        # In production, save to cloud storage (AWS S3, Google Cloud, etc.)
+        # For now, save as base64 in database
+        import base64
+        file_base64 = base64.b64encode(file_content).decode('utf-8')
+        
+        # Save document record
+        document_record = {
+            "user_id": current_user["user_id"],
+            "document_type": document_type,
+            "filename": unique_filename,
+            "original_filename": file.filename,
+            "file_data": file_base64,
+            "status": "pending",
+            "uploaded_at": datetime.utcnow(),
+            "reviewed_at": None,
+            "rejection_reason": None
+        }
+        
+        result = await db.driver_documents.insert_one(document_record)
+        
+        return {
+            "id": str(result.inserted_id),
+            "message": "تم رفع المستند بنجاح",
+            "document_type": document_type,
+            "filename": unique_filename
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في رفع المستند: {str(e)}")
+
+@api_router.get("/drivers/earnings")
+async def get_driver_earnings(
+    period: str = "today",
+    current_user: dict = Depends(get_current_user)
+):
+    """Get driver earnings data"""
+    try:
+        if current_user["user_type"] != "driver":
+            raise HTTPException(status_code=403, detail="هذه الخدمة متاحة للسائقين فقط")
+        
+        user_id = current_user["user_id"]
+        now = datetime.utcnow()
+        
+        # Calculate date ranges
+        if period == "today":
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_date = now
+        elif period == "week":
+            start_date = now - timedelta(days=now.weekday())
+            start_date = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+            end_date = now
+        elif period == "month":
+            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end_date = now
+        else:
+            raise HTTPException(status_code=400, detail="فترة زمنية غير صالحة")
+        
+        # Get completed rides and deliveries
+        rides_query = {
+            "driver_id": user_id,
+            "status": "completed",
+            "completed_at": {"$gte": start_date, "$lte": end_date}
+        }
+        
+        rides = await db.rides.find(rides_query).to_list(None)
+        deliveries = await db.deliveries.find(rides_query).to_list(None)
+        
+        # Calculate earnings
+        total_earnings = 0
+        total_rides = len(rides) + len(deliveries)
+        total_tips = 0
+        total_commission = 0
+        
+        recent_rides = []
+        
+        for ride in rides:
+            fare = ride.get("total_cost", 0)
+            tip = ride.get("tip", 0)
+            commission = fare * 0.15  # 15% commission
+            net_earning = fare + tip - commission
+            
+            total_earnings += net_earning
+            total_tips += tip
+            total_commission += commission
+            
+            recent_rides.append({
+                "id": str(ride["_id"]),
+                "rideType": "ride",
+                "completedAt": ride["completed_at"].isoformat(),
+                "pickupLocation": ride["pickup_location"]["address"],
+                "destinationLocation": ride.get("destination_location", {}).get("address", ""),
+                "distance": ride.get("distance_km", 0),
+                "duration": ride.get("duration_minutes", 0),
+                "fare": fare,
+                "tip": tip,
+                "commission": commission,
+                "netEarning": net_earning,
+                "paymentMethod": ride.get("payment_method", "cash")
+            })
+        
+        for delivery in deliveries:
+            fare = delivery.get("total_cost", 0)
+            tip = delivery.get("tip", 0)
+            commission = fare * 0.15
+            net_earning = fare + tip - commission
+            
+            total_earnings += net_earning
+            total_tips += tip
+            total_commission += commission
+            
+            recent_rides.append({
+                "id": str(delivery["_id"]),
+                "rideType": "delivery",
+                "completedAt": delivery["completed_at"].isoformat(),
+                "pickupLocation": delivery["pickup_location"]["address"],
+                "destinationLocation": delivery["delivery_location"]["address"],
+                "distance": delivery.get("distance_km", 0),
+                "duration": delivery.get("duration_minutes", 0),
+                "fare": fare,
+                "tip": tip,
+                "commission": commission,
+                "netEarning": net_earning,
+                "paymentMethod": delivery.get("payment_method", "cash")
+            })
+        
+        # Sort recent rides by completion time
+        recent_rides.sort(key=lambda x: x["completedAt"], reverse=True)
+        
+        # Get user's balance info
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        
+        # Mock payout history (in production, get from database)
+        payout_history = [
+            {
+                "id": str(uuid.uuid4()),
+                "date": (now - timedelta(days=7)).isoformat(),
+                "amount": 50000,
+                "method": "bank_transfer",
+                "status": "completed",
+                "transactionId": "TXN" + str(random.randint(100000, 999999))
+            }
+        ]
+        
+        return {
+            "today": {
+                "date": now.date().isoformat(),
+                "totalEarnings": total_earnings,
+                "totalRides": total_rides,
+                "averageRide": total_earnings / total_rides if total_rides > 0 else 0,
+                "onlineHours": 8,  # Mock data
+                "tips": total_tips,
+                "commission": total_commission,
+                "netEarnings": total_earnings
+            },
+            "thisWeek": {
+                "weekStart": start_date.date().isoformat(),
+                "weekEnd": end_date.date().isoformat(),
+                "totalEarnings": total_earnings,
+                "totalRides": total_rides,
+                "totalHours": 40,  # Mock data
+                "dailyEarnings": [],  # Can be expanded
+                "bestDay": {
+                    "date": now.date().isoformat(),
+                    "earnings": total_earnings
+                }
+            },
+            "thisMonth": {
+                "month": now.month,
+                "year": now.year,
+                "totalEarnings": total_earnings,
+                "totalRides": total_rides,
+                "weeklyBreakdown": []  # Can be expanded
+            },
+            "recentRides": recent_rides,
+            "payoutHistory": payout_history,
+            "totalBalance": user.get("total_earnings", 0),
+            "pendingBalance": user.get("pending_balance", 0),
+            "availableBalance": user.get("available_balance", 0)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في جلب الأرباح: {str(e)}")
+
+@api_router.post("/drivers/request-payout")
+async def request_payout(current_user: dict = Depends(get_current_user)):
+    """Request payout for driver"""
+    try:
+        if current_user["user_type"] != "driver":
+            raise HTTPException(status_code=403, detail="هذه الخدمة متاحة للسائقين فقط")
+        
+        user_id = current_user["user_id"]
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+        
+        available_balance = user.get("available_balance", 0)
+        if available_balance < 10000:  # Minimum payout
+            raise HTTPException(status_code=400, detail="الحد الأدنى للسحب 10,000 د.ع")
+        
+        # Create payout request
+        payout_request = {
+            "user_id": user_id,
+            "amount": available_balance,
+            "status": "pending",
+            "requested_at": datetime.utcnow(),
+            "processed_at": None,
+            "transaction_id": None
+        }
+        
+        await db.payout_requests.insert_one(payout_request)
+        
+        # Update user balance
+        await db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {
+                "$set": {"available_balance": 0},
+                "$inc": {"pending_balance": available_balance}
+            }
+        )
+        
+        return {"message": "تم طلب السحب بنجاح", "amount": available_balance}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"خطأ في طلب السحب: {str(e)}")
+
 # =====================================================
 
 @api_router.post("/auth/register", response_model=Token)
