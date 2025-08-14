@@ -1371,6 +1371,14 @@ const styles = StyleSheet.create({
   profileButton: {
     padding: 8,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  ridesListButton: {
+    padding: 8,
+  },
 
   // Map Container
   mapContainer: {
@@ -1425,6 +1433,142 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666666',
     marginTop: 4,
+  },
+
+  // Rides List Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  ridesListContent: {
+    padding: 16,
+  },
+  rideItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  rideItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rideDestination: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1A1A1A',
+    flex: 1,
+  },
+  rideStatus: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  rideTime: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 8,
+  },
+  driverInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  driverName: {
+    fontSize: 14,
+    color: '#333333',
+    flex: 1,
+  },
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 4,
+  },
+  chatButtonText: {
+    fontSize: 12,
+    color: '#00C853',
+    fontWeight: 'bold',
+  },
+  estimatedFare: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00C853',
+  },
+  passengerName: {
+    fontSize: 14,
+    color: '#666666',
+    marginBottom: 12,
+  },
+  acceptButton: {
+    backgroundColor: '#00C853',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  acceptButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+    backgroundColor: '#F8F8F8',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 16,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#00C853',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#999',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
   },
 
   // Driver Specific Styles
