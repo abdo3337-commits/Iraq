@@ -1319,7 +1319,9 @@ async def send_message(
     other_user_id = service[user_field] if user_id == service.get(other_field) else service.get(other_field)
     if other_user_id:
         message_for_ws = message_doc.copy()
-        message_for_ws["id"] = str(message_doc["_id"])
+        if "_id" in message_doc:
+            message_for_ws["id"] = str(message_doc["_id"])
+            del message_for_ws["_id"]
         await manager.send_personal_message({
             "type": "new_message",
             "message": message_for_ws
